@@ -25,6 +25,8 @@ export type InsuranceRequest = {
   status: InsuranceRequestStatus;
   provider_claim_number: string | null;
   claims_handler: string | null;
+  progress_stage: InsuranceRequestProgressStage;
+  progress_updated_at: string;
   created_at: string;
 };
 
@@ -34,6 +36,16 @@ export type InsuranceRequestStatus =
   | "Approved"
   | "Changes Required"
   | "Rejected";
+
+export type InsuranceRequestProgressStage =
+  | "Provider Acknowledged"
+  | "Assessment Scheduled"
+  | "Assessment Complete"
+  | "Repairs Authorized"
+  | "Repair In Progress"
+  | "Car Hire Arranged"
+  | "Ready for Collection"
+  | "Closed";
 
 /** Submit a structured motor-accident report through the protected API. */
 export async function submitAccidentReport(
@@ -84,6 +96,27 @@ export async function getAdviserReviewQueue(
   return (await response.json()) as InsuranceRequest[];
 }
 
+/** Load claim history for the owning Client or assigned Adviser. */
+export async function getClientInsuranceRequests(
+  accessToken: string,
+  clientId: string,
+  signal?: AbortSignal,
+): Promise<InsuranceRequest[]> {
+  const response = await fetch(
+    `${apiUrl}/clients/${clientId}/insurance-requests`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      signal,
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Claim progress could not be loaded.");
+  }
+
+  return (await response.json()) as InsuranceRequest[];
+}
+
 /** Apply one allowed Adviser status transition to a claim. */
 export async function updateInsuranceRequestStatus(
   accessToken: string,
@@ -104,6 +137,34 @@ export async function updateInsuranceRequestStatus(
       detail?: string;
     } | null;
     throw new Error(body?.detail ?? "The claim status could not be updated.");
+  }
+
+  return (await response.json()) as InsuranceRequest;
+}
+
+/** Advance an approved claim to its next operational milestone. */
+export async function updateInsuranceRequestProgress(
+  accessToken: string,
+  requestId: string,
+  stage: InsuranceRequestProgressStage,
+): Promise<InsuranceRequest> {
+  const response = await fetch(
+    `${apiUrl}/insurance-requests/${requestId}/progress`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ stage }),
+    },
+  );
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as {
+      detail?: string;
+    } | null;
+    throw new Error(body?.detail ?? "Claim progress could not be updated.");
   }
 
   return (await response.json()) as InsuranceRequest;

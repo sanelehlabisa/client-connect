@@ -8,7 +8,11 @@ from sqlalchemy.orm import Session
 
 from app.email_service import send_email
 from app.provider_gateway import submit_claim
-from app.schemas import InsuranceRequest, InsuranceRequestStatus
+from app.schemas import (
+    InsuranceRequest,
+    InsuranceRequestProgressStage,
+    InsuranceRequestStatus,
+)
 
 ALLOWED_STATUS_TRANSITIONS: dict[str, set[str]] = {
     "Submitted": {"Under Review"},
@@ -34,6 +38,16 @@ STATUS_NOTIFICATION_CONTENT: dict[str, tuple[str, str]] = {
     ),
 }
 
+PROGRESS_TRANSITIONS: dict[str, str] = {
+    "Provider Acknowledged": "Assessment Scheduled",
+    "Assessment Scheduled": "Assessment Complete",
+    "Assessment Complete": "Repairs Authorized",
+    "Repairs Authorized": "Repair In Progress",
+    "Repair In Progress": "Car Hire Arranged",
+    "Car Hire Arranged": "Ready for Collection",
+    "Ready for Collection": "Closed",
+}
+
 
 class InvalidStatusTransitionError(Exception):
     """Raised when an Adviser attempts an out-of-order review decision."""
@@ -46,6 +60,30 @@ class InvalidStatusTransitionError(Exception):
         super().__init__(
             f"Cannot change status from {current_status} to {requested_status}."
         )
+
+
+class InvalidProgressTransitionError(Exception):
+    """Raised when claim progress is changed out of sequence."""
+
+    def __init__(
+        self,
+        review_status: str,
+        current_stage: str,
+        requested_stage: str,
+    ) -> None:
+        """Store workflow values so the API can return a useful error."""
+
+        if review_status != "Approved":
+            message = "A claim must be approved before progress can advance."
+        else:
+            message = (
+                f"Cannot change progress from {current_stage} "
+                f"to {requested_stage}."
+            )
+        self.review_status = review_status
+        self.current_stage = current_stage
+        self.requested_stage = requested_stage
+        super().__init__(message)
 
 
 def _insurance_request(row: Any) -> InsuranceRequest:
@@ -62,6 +100,8 @@ def _insurance_request(row: Any) -> InsuranceRequest:
         status=row.status,
         provider_claim_number=row.provider_claim_number,
         claims_handler=row.claims_handler,
+        progress_stage=row.progress_stage,
+        progress_updated_at=row.progress_updated_at,
         created_at=row.created_at,
     )
 
@@ -83,6 +123,8 @@ def _find_request(session: Session, request_id: str) -> InsuranceRequest:
                 insurance_requests.status,
                 insurance_requests.provider_claim_number,
                 insurance_requests.claims_handler,
+                insurance_requests.progress_stage,
+                insurance_requests.progress_updated_at,
                 insurance_requests.created_at
             FROM insurance_requests
             JOIN products ON products.id = insurance_requests.product_id
@@ -275,6 +317,8 @@ def list_client_insurance_requests(
                 insurance_requests.status,
                 insurance_requests.provider_claim_number,
                 insurance_requests.claims_handler,
+                insurance_requests.progress_stage,
+                insurance_requests.progress_updated_at,
                 insurance_requests.created_at
             FROM insurance_requests
             JOIN products ON products.id = insurance_requests.product_id
@@ -309,6 +353,8 @@ def list_adviser_review_queue(
                 insurance_requests.status,
                 insurance_requests.provider_claim_number,
                 insurance_requests.claims_handler,
+                insurance_requests.progress_stage,
+                insurance_requests.progress_updated_at,
                 insurance_requests.created_at
             FROM insurance_requests
             JOIN products ON products.id = insurance_requests.product_id
@@ -429,4 +475,90 @@ def update_insurance_request_status(
                 "Sign in to RSF ClientConnect to view your claim."
             ),
         )
+    return request
+
+
+def update_insurance_request_progress(
+    session: Session,
+    request_id: str,
+    adviser_email: str,
+    requested_stage: InsuranceRequestProgressStage,
+) -> InsuranceRequest | None:
+    """Advance one approved claim through the operational workflow."""
+
+    row = session.execute(
+        text(
+            """
+            SELECT
+                insurance_requests.status,
+                insurance_requests.progress_stage
+            FROM insurance_requests
+            JOIN products ON products.id = insurance_requests.product_id
+            JOIN clients ON clients.id = products.client_id
+            JOIN users AS adviser_user ON adviser_user.id = clients.adviser_id
+            WHERE insurance_requests.id = :request_id
+              AND adviser_user.email = :adviser_email
+            FOR UPDATE OF insurance_requests
+            """
+        ),
+        {"request_id": request_id, "adviser_email": adviser_email},
+    ).one_or_none()
+    if row is None:
+        return None
+
+    expected_stage = PROGRESS_TRANSITIONS.get(row.progress_stage)
+    if row.status != "Approved" or requested_stage != expected_stage:
+        raise InvalidProgressTransitionError(
+            review_status=row.status,
+            current_stage=row.progress_stage,
+            requested_stage=requested_stage,
+        )
+
+    session.execute(
+        text(
+            """
+            UPDATE insurance_requests
+            SET
+                progress_stage = :requested_stage,
+                progress_updated_at = CURRENT_TIMESTAMP
+            WHERE id = :request_id
+            """
+        ),
+        {"request_id": request_id, "requested_stage": requested_stage},
+    )
+    request = _find_request(session, request_id)
+    session.execute(
+        text(
+            """
+            INSERT INTO notifications (
+                id,
+                user_id,
+                title,
+                message,
+                is_read,
+                product_id
+            )
+            SELECT
+                :notification_id,
+                clients.user_id,
+                'Claim progress updated',
+                :message,
+                FALSE,
+                products.id
+            FROM insurance_requests
+            JOIN products ON products.id = insurance_requests.product_id
+            JOIN clients ON clients.id = products.client_id
+            WHERE insurance_requests.id = :request_id
+            """
+        ),
+        {
+            "notification_id": str(uuid4()),
+            "request_id": request_id,
+            "message": (
+                f"Your {request.product_name} claim is now: "
+                f"{requested_stage}."
+            ),
+        },
+    )
+    session.commit()
     return request

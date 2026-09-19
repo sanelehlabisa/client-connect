@@ -27,6 +27,7 @@ import { AccidentReportDialog } from "./AccidentReportDialog";
 import { AddGoalDialog } from "./AddGoalDialog";
 import { AddInsuranceDialog } from "./AddInsuranceDialog";
 import { AddInvestmentDialog } from "./AddInvestmentDialog";
+import { ClaimProgressPanel } from "./ClaimProgressPanel";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
 import { ChatPanel } from "./ChatPanel";
 
@@ -276,6 +277,10 @@ export function ClientOverviewPanel({
           </TableBody>
         </Table>
       </TableContainer>
+      <ClaimProgressPanel
+        clientId={overview.id}
+        getAccessToken={getAccessToken}
+      />
       <ChatPanel
         clientId={overview.id}
         getAccessToken={getAccessToken}

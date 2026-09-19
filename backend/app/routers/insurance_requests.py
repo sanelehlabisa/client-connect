@@ -13,15 +13,18 @@ from app.auth import (
 )
 from app.database import get_database_session
 from app.insurance_request_repository import (
+    InvalidProgressTransitionError,
     InvalidStatusTransitionError,
     create_insurance_request,
     list_adviser_review_queue,
     list_client_insurance_requests,
     update_insurance_request_status,
+    update_insurance_request_progress,
 )
 from app.schemas import (
     InsuranceRequest,
     InsuranceRequestCreate,
+    InsuranceRequestProgressUpdate,
     InsuranceRequestStatusUpdate,
 )
 
@@ -116,6 +119,39 @@ def review_insurance_request(
             requested_status=update.status,
         )
     except InvalidStatusTransitionError as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error),
+        ) from error
+
+    if request is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Insurance request not found.",
+        )
+    return request
+
+
+@review_router.patch(
+    "/{request_id}/progress",
+    response_model=InsuranceRequest,
+)
+def advance_insurance_request_progress(
+    request_id: str,
+    update: InsuranceRequestProgressUpdate,
+    adviser: Annotated[AuthenticatedUser, Depends(require_role("adviser"))],
+    session: Annotated[Session, Depends(get_database_session)],
+) -> InsuranceRequest:
+    """Advance one approved claim to its next operational milestone."""
+
+    try:
+        request = update_insurance_request_progress(
+            session=session,
+            request_id=request_id,
+            adviser_email=require_email(adviser),
+            requested_stage=update.stage,
+        )
+    except InvalidProgressTransitionError as error:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=str(error),

@@ -14,6 +14,17 @@ InsuranceRequestStatus = Literal[
     "Rejected",
 ]
 
+InsuranceRequestProgressStage = Literal[
+    "Provider Acknowledged",
+    "Assessment Scheduled",
+    "Assessment Complete",
+    "Repairs Authorized",
+    "Repair In Progress",
+    "Car Hire Arranged",
+    "Ready for Collection",
+    "Closed",
+]
+
 
 class FinancialPosition(BaseModel):
     """A client's current high-level financial position."""
@@ -221,6 +232,12 @@ class InsuranceRequestStatusUpdate(BaseModel):
     ]
 
 
+class InsuranceRequestProgressUpdate(BaseModel):
+    """The next operational milestone selected by an Adviser."""
+
+    stage: InsuranceRequestProgressStage
+
+
 class InsuranceRequest(BaseModel):
     """An insurance change request visible to its Client and Adviser."""
 
@@ -234,4 +251,6 @@ class InsuranceRequest(BaseModel):
     status: InsuranceRequestStatus
     provider_claim_number: str | None
     claims_handler: str | None
+    progress_stage: InsuranceRequestProgressStage
+    progress_updated_at: datetime
     created_at: datetime

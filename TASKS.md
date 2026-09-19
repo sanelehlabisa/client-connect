@@ -95,7 +95,7 @@ For this PoC, use seeded products. Product creation is deferred.
 ## Provider and claim automation
 
 - [x] Mock provider acknowledgement with a claim number and claims handler.
-- [ ] Track assessment, repair, car hire, collection, and claim closure.
+- [x] Track assessment, repair, car hire, collection, and claim closure.
 - [ ] Replace the mock acknowledgement with real provider APIs.
 
 ## Deferred
