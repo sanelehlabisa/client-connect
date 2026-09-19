@@ -1,5 +1,9 @@
 """FastAPI entry point for RSF ClientConnect."""
 
+import asyncio
+import logging
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager, suppress
 from typing import Annotated, Literal
 
 from fastapi import Depends, FastAPI
@@ -8,6 +12,7 @@ from pydantic import BaseModel
 
 from app.auth import AuthenticatedUser, get_current_user, require_role
 from app.database import database_is_ready
+from app.reminder_delivery import run_due_reminder_delivery
 from app.routers.clients import router as clients_router
 from app.routers.insurance_requests import client_router, review_router
 from app.routers.messages import router as messages_router
@@ -16,8 +21,34 @@ from app.routers.reminders import router as reminders_router
 from app.settings import get_settings
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
-app = FastAPI(title=settings.app_name)
+
+async def reminder_delivery_loop() -> None:
+    """Run due-reminder delivery periodically without blocking the API."""
+
+    while True:
+        try:
+            await asyncio.to_thread(run_due_reminder_delivery)
+        except Exception:
+            logger.exception("The due-reminder delivery pass failed.")
+        await asyncio.sleep(settings.reminder_check_interval_seconds)
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    """Start and stop the small development reminder worker."""
+
+    reminder_task = asyncio.create_task(reminder_delivery_loop())
+    try:
+        yield
+    finally:
+        reminder_task.cancel()
+        with suppress(asyncio.CancelledError):
+            await reminder_task
+
+
+app = FastAPI(title=settings.app_name, lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.frontend_url],

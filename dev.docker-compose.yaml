@@ -27,6 +27,7 @@ services:
       SMTP_HOST: ${SMTP_HOST:-mailhog}
       SMTP_PORT: ${SMTP_PORT:-1025}
       MAIL_FROM: ${MAIL_FROM:-notifications@rsf.local}
+      REMINDER_CHECK_INTERVAL_SECONDS: ${REMINDER_CHECK_INTERVAL_SECONDS:-60}
       KEYCLOAK_URL: ${KEYCLOAK_URL:-http://localhost:8080}
       KEYCLOAK_INTERNAL_URL: ${KEYCLOAK_INTERNAL_URL:-http://keycloak:8080}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-rsf-clientconnect}

@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     smtp_host: str = "mailhog"
     smtp_port: int = 1025
     mail_from: str = "notifications@rsf.local"
+    reminder_check_interval_seconds: int = 60
 
     @property
     def keycloak_issuer(self) -> str:
