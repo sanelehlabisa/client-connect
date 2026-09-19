@@ -1,11 +1,23 @@
 """Database queries for client financial information."""
 
 from typing import Any
+from uuid import uuid4
 
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.schemas import ClientOverview, ClientSummary, FinancialPosition, Product
+from app.schemas import (
+    ClientOverview,
+    ClientProfile,
+    ClientSummary,
+    FinancialPosition,
+    Product,
+)
+
+
+class ClientEmailAlreadyExistsError(Exception):
+    """Raised when an Adviser tries to reuse an application-user email."""
 
 
 def _financial_position(row: Any) -> FinancialPosition:
@@ -145,3 +157,73 @@ def list_assigned_clients(
         )
         for row in rows
     ]
+
+
+def create_client_profile(
+    session: Session,
+    adviser_email: str,
+    client_name: str,
+    client_email: str,
+) -> ClientProfile | None:
+    """Create and assign a zero-balance Client profile to one Adviser."""
+
+    adviser_id = session.execute(
+        text("SELECT id FROM users WHERE email = :adviser_email"),
+        {"adviser_email": adviser_email},
+    ).scalar_one_or_none()
+    if adviser_id is None:
+        return None
+
+    user_id = str(uuid4())
+    client_id = str(uuid4())
+
+    try:
+        session.execute(
+            text(
+                """
+                INSERT INTO users (id, name, email)
+                VALUES (:user_id, :client_name, :client_email)
+                """
+            ),
+            {
+                "user_id": user_id,
+                "client_name": client_name,
+                "client_email": client_email,
+            },
+        )
+        session.execute(
+            text(
+                """
+                INSERT INTO clients (id, user_id, adviser_id)
+                VALUES (:client_id, :user_id, :adviser_id)
+                """
+            ),
+            {
+                "client_id": client_id,
+                "user_id": user_id,
+                "adviser_id": adviser_id,
+            },
+        )
+        session.execute(
+            text(
+                """
+                INSERT INTO financial_positions (
+                    client_id,
+                    assets,
+                    liabilities,
+                    monthly_income,
+                    monthly_expenses
+                )
+                VALUES (:client_id, 0, 0, 0, 0)
+                """
+            ),
+            {"client_id": client_id},
+        )
+        session.commit()
+    except IntegrityError as error:
+        session.rollback()
+        if getattr(error.orig, "sqlstate", None) == "23505":
+            raise ClientEmailAlreadyExistsError from error
+        raise
+
+    return ClientProfile(id=client_id, name=client_name, email=client_email)

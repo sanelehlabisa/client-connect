@@ -11,9 +11,14 @@ from app.auth import (
     require_email,
     require_role,
 )
-from app.client_repository import find_client_overview, list_assigned_clients
+from app.client_repository import (
+    ClientEmailAlreadyExistsError,
+    create_client_profile,
+    find_client_overview,
+    list_assigned_clients,
+)
 from app.database import get_database_session
-from app.schemas import ClientOverview, ClientSummary
+from app.schemas import ClientCreate, ClientOverview, ClientProfile, ClientSummary
 
 router = APIRouter(prefix="/clients", tags=["clients"])
 
@@ -29,6 +34,42 @@ def get_assigned_clients(
     """List only the clients assigned to the authenticated Adviser."""
 
     return list_assigned_clients(session, require_email(adviser))
+
+
+@router.post(
+    "",
+    response_model=ClientProfile,
+    status_code=status.HTTP_201_CREATED,
+)
+def add_client_profile(
+    client_data: ClientCreate,
+    adviser: Annotated[
+        AuthenticatedUser,
+        Depends(require_role("adviser")),
+    ],
+    session: Annotated[Session, Depends(get_database_session)],
+) -> ClientProfile:
+    """Create a Client profile assigned to the authenticated Adviser."""
+
+    try:
+        client = create_client_profile(
+            session=session,
+            adviser_email=require_email(adviser),
+            client_name=client_data.name,
+            client_email=client_data.email,
+        )
+    except ClientEmailAlreadyExistsError as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A user with this email address already exists.",
+        ) from error
+
+    if client is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Adviser profile not found.",
+        )
+    return client
 
 
 @router.get("/{client_id}", response_model=ClientOverview)

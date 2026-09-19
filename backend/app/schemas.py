@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 InsuranceRequestStatus = Literal[
     "Submitted",
@@ -53,6 +53,39 @@ class ClientSummary(BaseModel):
     financial_position: FinancialPosition
     product_count: int
     pending_actions: int
+
+
+class ClientCreate(BaseModel):
+    """The small Client profile an Adviser creates before account signup."""
+
+    name: str = Field(min_length=2, max_length=120)
+    email: str = Field(
+        min_length=5,
+        max_length=255,
+        pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+    )
+
+    @field_validator("name", "email", mode="before")
+    @classmethod
+    def strip_text(cls, value: object) -> object:
+        """Remove accidental surrounding spaces before validation."""
+
+        return value.strip() if isinstance(value, str) else value
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, value: str) -> str:
+        """Store emails consistently because identity matching uses them."""
+
+        return value.lower()
+
+
+class ClientProfile(BaseModel):
+    """A Client profile linked to its Adviser by email identity."""
+
+    id: str
+    name: str
+    email: str
 
 
 class InsuranceRequestCreate(BaseModel):

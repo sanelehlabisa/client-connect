@@ -18,6 +18,17 @@ export type ClientSummary = {
   pending_actions: number;
 };
 
+export type ClientProfile = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+export type ClientCreate = {
+  name: string;
+  email: string;
+};
+
 /** Load the clients assigned to the Adviser represented by the access token. */
 export async function getAssignedClients(
   accessToken: string,
@@ -35,4 +46,28 @@ export async function getAssignedClients(
   }
 
   return (await response.json()) as ClientSummary[];
+}
+
+/** Create a Client profile assigned to the authenticated Adviser. */
+export async function createClientProfile(
+  accessToken: string,
+  client: ClientCreate,
+): Promise<ClientProfile> {
+  const response = await fetch(`${apiUrl}/clients`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(client),
+  });
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as {
+      detail?: string;
+    } | null;
+    throw new Error(body?.detail ?? "The Client profile could not be created.");
+  }
+
+  return (await response.json()) as ClientProfile;
 }
