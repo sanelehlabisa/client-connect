@@ -98,6 +98,12 @@ For this PoC, use seeded products. Product creation is deferred.
 - [x] Track assessment, repair, car hire, collection, and claim closure.
 - [ ] Replace the mock acknowledgement with real provider APIs.
 
+## Automated reminders
+
+- [x] Show role-appropriate seeded reminders with due dates.
+- [ ] Let Advisers create and schedule reminders for assigned Clients.
+- [ ] Send due reminders through in-app notifications and email.
+
 ## Deferred
 
 - [ ] Assessors, repairers, and advanced claim automation.

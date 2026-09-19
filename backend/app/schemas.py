@@ -213,6 +213,18 @@ class NotificationItem(BaseModel):
     created_at: datetime
 
 
+class Reminder(BaseModel):
+    """A dated task visible to a Client, Adviser, or both roles."""
+
+    id: str
+    client_id: str
+    client_name: str
+    title: str
+    due_date: date
+    audience: Literal["Client", "Adviser", "Both"]
+    is_completed: bool
+
+
 class InsuranceRequestCreate(BaseModel):
     """Information a Client submits for an insurance policy change."""
 

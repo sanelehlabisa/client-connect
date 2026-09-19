@@ -12,6 +12,7 @@ import { AssignedClientsTable } from "../components/AssignedClientsTable";
 import { AppHeader } from "../components/AppHeader";
 import { ClientOverviewPanel } from "../components/ClientOverviewPanel";
 import { InsuranceReviewQueue } from "../components/InsuranceReviewQueue";
+import { RemindersPanel } from "../components/RemindersPanel";
 
 /** Show the correct dashboard shell for the authenticated Keycloak role. */
 export function DashboardPage() {
@@ -49,9 +50,13 @@ export function DashboardPage() {
               <>
                 <AssignedClientsTable getAccessToken={auth.getAccessToken} />
                 <InsuranceReviewQueue getAccessToken={auth.getAccessToken} />
+                <RemindersPanel getAccessToken={auth.getAccessToken} />
               </>
             ) : (
-              <ClientOverviewPanel getAccessToken={auth.getAccessToken} />
+              <>
+                <ClientOverviewPanel getAccessToken={auth.getAccessToken} />
+                <RemindersPanel getAccessToken={auth.getAccessToken} />
+              </>
             )}
           </Stack>
         )}
