@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { CssBaseline, ThemeProvider } from "@mui/material";
+import { BrowserRouter } from "react-router-dom";
 
 import App from "./App";
 import { AuthProvider } from "./auth/AuthContext";
@@ -15,7 +16,9 @@ createRoot(rootElement).render(
   <ThemeProvider theme={theme}>
     <CssBaseline />
     <AuthProvider>
-      <App />
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
     </AuthProvider>
   </ThemeProvider>,
 );

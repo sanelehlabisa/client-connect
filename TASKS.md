@@ -19,10 +19,10 @@
 ## 3. Authentication and API security
 
 - [x] Add Keycloak login, registration, session, role, and logout support.
-- [ ] Create `/login` and redirect its login/registration actions to Keycloak.
+- [x] Create `/login` and redirect its login/registration actions to Keycloak.
 - [x] Seed realistic Client and Adviser accounts.
-- [ ] Route a Client to their own dashboard after login.
-- [ ] Route an Adviser to their assigned-clients dashboard after login.
+- [x] Route a Client to their own dashboard after login.
+- [x] Route an Adviser to their assigned-clients dashboard after login.
 - [x] Protect Client financial data with ownership checks.
 - [x] Protect review and approval actions with the `adviser` role.
 - [x] Keep roles in Keycloak as the source of truth.

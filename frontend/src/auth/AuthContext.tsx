@@ -74,15 +74,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const roles = keycloak.realmAccess?.roles ?? [];
 
   async function login(): Promise<void> {
-    await keycloak.login({ redirectUri: window.location.origin });
+    await keycloak.login({
+      redirectUri: `${window.location.origin}/dashboard`,
+    });
   }
 
   async function register(): Promise<void> {
-    await keycloak.register({ redirectUri: window.location.origin });
+    await keycloak.register({
+      redirectUri: `${window.location.origin}/dashboard`,
+    });
   }
 
   async function logout(): Promise<void> {
-    await keycloak.logout({ redirectUri: window.location.origin });
+    await keycloak.logout({
+      redirectUri: `${window.location.origin}/login`,
+    });
   }
 
   async function getAccessToken(): Promise<string | undefined> {
