@@ -16,7 +16,11 @@ import {
   Typography,
 } from "@mui/material";
 
-import { getReminders, type Reminder } from "../api/reminders";
+import {
+  completeReminder,
+  getReminders,
+  type Reminder,
+} from "../api/reminders";
 import { useAuth } from "../auth/AuthContext";
 import { AddReminderDialog } from "./AddReminderDialog";
 
@@ -58,9 +62,32 @@ export function RemindersPanel({ getAccessToken }: RemindersPanelProps) {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [completionError, setCompletionError] = useState(false);
   const [refreshNumber, setRefreshNumber] = useState(0);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [completingId, setCompletingId] = useState<string>();
   const isAdviser = auth.roles.includes("adviser");
+
+  async function handleComplete(reminderId: string): Promise<void> {
+    setCompletionError(false);
+    setCompletingId(reminderId);
+    try {
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        throw new Error("A valid access token is required.");
+      }
+      const completedReminder = await completeReminder(accessToken, reminderId);
+      setReminders((currentReminders) =>
+        currentReminders.map((reminder) =>
+          reminder.id === reminderId ? completedReminder : reminder,
+        ),
+      );
+    } catch {
+      setCompletionError(true);
+    } finally {
+      setCompletingId(undefined);
+    }
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -107,6 +134,11 @@ export function RemindersPanel({ getAccessToken }: RemindersPanelProps) {
 
   return (
     <>
+      {completionError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          The reminder could not be completed. Please try again.
+        </Alert>
+      )}
       <TableContainer component={Paper} variant="outlined">
         <Stack
           alignItems={{ xs: "flex-start", sm: "center" }}
@@ -140,12 +172,13 @@ export function RemindersPanel({ getAccessToken }: RemindersPanelProps) {
               <TableCell>Audience</TableCell>
               <TableCell>Due date</TableCell>
               <TableCell>Status</TableCell>
+              <TableCell align="right">Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {reminders.length === 0 && (
               <TableRow>
-                <TableCell colSpan={isAdviser ? 5 : 4}>
+                <TableCell colSpan={isAdviser ? 6 : 5}>
                   <Typography color="text.secondary" textAlign="center">
                     No reminders are scheduled.
                   </Typography>
@@ -166,6 +199,19 @@ export function RemindersPanel({ getAccessToken }: RemindersPanelProps) {
                   </TableCell>
                   <TableCell>
                     <Chip color={state.color} label={state.label} size="small" />
+                  </TableCell>
+                  <TableCell align="right">
+                    {!reminder.is_completed && (
+                      <Button
+                        disabled={completingId !== undefined}
+                        onClick={() => void handleComplete(reminder.id)}
+                        size="small"
+                      >
+                        {completingId === reminder.id
+                          ? "Completing..."
+                          : "Mark complete"}
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               );

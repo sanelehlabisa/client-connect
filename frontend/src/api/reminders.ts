@@ -57,3 +57,23 @@ export async function createReminder(
 
   return (await response.json()) as Reminder;
 }
+
+/** Mark a reminder visible to the current user as complete. */
+export async function completeReminder(
+  accessToken: string,
+  reminderId: string,
+): Promise<Reminder> {
+  const response = await fetch(
+    `${apiUrl}/reminders/${encodeURIComponent(reminderId)}/complete`,
+    {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("The reminder could not be completed.");
+  }
+
+  return (await response.json()) as Reminder;
+}

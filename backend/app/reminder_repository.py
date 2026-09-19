@@ -124,3 +124,71 @@ def create_reminder(
         audience=audience,
         is_completed=False,
     )
+
+
+def complete_reminder(
+    session: Session,
+    reminder_id: str,
+    user_email: str,
+    is_adviser: bool,
+) -> Reminder | None:
+    """Complete a reminder only when it is visible to the current user."""
+
+    reminder = session.execute(
+        text(
+            """
+            SELECT
+                reminders.id,
+                clients.id AS client_id,
+                client_user.name AS client_name,
+                reminders.title,
+                reminders.due_date,
+                reminders.audience
+            FROM reminders
+            JOIN clients ON clients.id = reminders.client_id
+            JOIN users AS client_user ON client_user.id = clients.user_id
+            JOIN users AS adviser_user ON adviser_user.id = clients.adviser_id
+            WHERE reminders.id = :reminder_id
+              AND (
+                    (
+                        :is_adviser
+                        AND adviser_user.email = :user_email
+                        AND reminders.audience IN ('Adviser', 'Both')
+                    )
+                    OR (
+                        NOT :is_adviser
+                        AND client_user.email = :user_email
+                        AND reminders.audience IN ('Client', 'Both')
+                    )
+                  )
+            """
+        ),
+        {
+            "reminder_id": reminder_id,
+            "user_email": user_email,
+            "is_adviser": is_adviser,
+        },
+    ).one_or_none()
+    if reminder is None:
+        return None
+
+    session.execute(
+        text(
+            """
+            UPDATE reminders
+            SET is_completed = TRUE
+            WHERE id = :reminder_id
+            """
+        ),
+        {"reminder_id": reminder_id},
+    )
+    session.commit()
+    return Reminder(
+        id=reminder.id,
+        client_id=reminder.client_id,
+        client_name=reminder.client_name,
+        title=reminder.title,
+        due_date=reminder.due_date,
+        audience=reminder.audience,
+        is_completed=True,
+    )
