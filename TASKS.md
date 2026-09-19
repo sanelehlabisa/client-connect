@@ -29,7 +29,7 @@
 
 ## 4. Brokerage client management
 
-- [ ] Show the Adviser a table of assigned clients.
+- [x] Show the Adviser a table of assigned clients.
 - [ ] Let the Adviser add a Client profile with name and email.
 - [ ] Link the Client profile to the brokerage, Adviser, and matching Keycloak account.
 - [ ] Let the Adviser open `/client/:id` only for an assigned Client.

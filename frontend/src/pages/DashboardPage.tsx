@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 
 import { useAuth } from "../auth/AuthContext";
+import { AssignedClientsTable } from "../components/AssignedClientsTable";
 
 /** Show the correct dashboard shell for the authenticated Keycloak role. */
 export function DashboardPage() {
@@ -54,16 +55,19 @@ export function DashboardPage() {
               </Typography>
             </Stack>
 
-            <Paper variant="outlined" sx={{ p: 3 }}>
-              <Typography fontWeight={700} gutterBottom>
-                {isAdviser ? "Assigned clients" : "Financial overview"}
-              </Typography>
-              <Typography color="text.secondary">
-                {isAdviser
-                  ? "Your assigned-client table will appear here in the next ticket."
-                  : "Your financial position and products will appear here in the next ticket."}
-              </Typography>
-            </Paper>
+            {isAdviser ? (
+              <AssignedClientsTable getAccessToken={auth.getAccessToken} />
+            ) : (
+              <Paper variant="outlined" sx={{ p: 3 }}>
+                <Typography fontWeight={700} gutterBottom>
+                  Financial overview
+                </Typography>
+                <Typography color="text.secondary">
+                  Your financial position and products will appear here in the
+                  next ticket.
+                </Typography>
+              </Paper>
+            )}
           </Stack>
         )}
       </Container>
