@@ -1,0 +1,179 @@
+{
+  "realm": "rsf-clientconnect",
+  "displayName": "RSF ClientConnect",
+  "enabled": true,
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "editUsernameAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": true,
+  "verifyEmail": false,
+  "roles": {
+    "realm": [
+      {
+        "name": "client",
+        "description": "Can view and submit changes for their own financial information",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "adviser",
+        "description": "Can review assigned clients and approve submitted changes",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "default-roles-rsf-clientconnect",
+        "description": "Default role granted to every RSF ClientConnect user",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "client"
+          ]
+        },
+        "clientRole": false
+      }
+    ]
+  },
+  "defaultRole": {
+    "name": "default-roles-rsf-clientconnect",
+    "description": "Default role granted to every RSF ClientConnect user",
+    "composite": true,
+    "clientRole": false
+  },
+  "groups": [
+    {
+      "name": "advisers",
+      "path": "/advisers",
+      "realmRoles": [
+        "adviser"
+      ],
+      "subGroups": []
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "rsf-frontend",
+      "name": "RSF ClientConnect Frontend",
+      "description": "Public React browser client",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:5173/*"
+      ],
+      "webOrigins": [
+        "http://localhost:5173"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:5173/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "rsf-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "rsf-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ],
+      "defaultClientScopes": [
+        "basic",
+        "web-origins",
+        "acr",
+        "roles",
+        "profile",
+        "email"
+      ]
+    },
+    {
+      "clientId": "rsf-api",
+      "name": "RSF ClientConnect API",
+      "description": "Audience used by FastAPI access tokens",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "bearerOnly": true
+    },
+    {
+      "clientId": "rsf-test-cli",
+      "name": "RSF Development Test CLI",
+      "description": "Development-only client used to verify seeded accounts",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "protocolMappers": [
+        {
+          "name": "rsf-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "rsf-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ],
+      "defaultClientScopes": [
+        "basic",
+        "roles",
+        "profile",
+        "email"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "thabo.mokoena",
+      "firstName": "Thabo",
+      "lastName": "Mokoena",
+      "email": "thabo.mokoena@example.test",
+      "enabled": true,
+      "emailVerified": true,
+      "realmRoles": [
+        "client"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Client123!",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "amina.daniels",
+      "firstName": "Amina",
+      "lastName": "Daniels",
+      "email": "amina.daniels@example.test",
+      "enabled": true,
+      "emailVerified": true,
+      "realmRoles": [
+        "client"
+      ],
+      "groups": [
+        "/advisers"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Adviser123!",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

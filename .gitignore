@@ -1,0 +1,17 @@
+# Frontend
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Backend
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+
+# Local configuration
+.env
+.env.local
+npm-debug.log*
+.vscode/
