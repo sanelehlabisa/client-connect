@@ -1,73 +1,94 @@
 # RSF ClientConnect - 1-Day PoC
 
-## 1. Project setup
+## 1. Product scope
 
-- [x] Use React + TypeScript + Material UI for the frontend.
-- [x] Use Python + FastAPI for the backend.
-- [x] Use PostgreSQL for development data.
-- [x] Create frontend/, backend/, and database/.
-- [x] Add the white-and-blue Material UI theme.
-- [x] Add typed, documented starter code.
-- [x] Add .env.example.
+- [x] Treat Royal Square as the brokerage customer using our platform.
+- [x] Support only two app users: `Client` and `Adviser`.
+- [x] Keep the PoC for one brokerage; advisers manage its individual clients.
+- [x] Keep the business model transaction-based, not subscription-based.
+- [x] Prioritize one complete Client-to-Adviser demo over extra features.
 
-## 2. Docker development
+## 2. Project and Docker setup
 
-- [x] Add frontend and backend Dockerfiles.
-- [x] Add dev.docker-compose.yaml with app, database, Keycloak, and MailHog services.
-- [x] Mount source code for Vite and FastAPI hot reload.
-- [x] Expose frontend, API, PostgreSQL, Keycloak, SMTP, and MailHog ports.
-- [x] Document start, stop, rebuild, and log commands.
-- [x] Build the images and verify both hot-reload paths.
+- [x] Use React, TypeScript, Material UI, FastAPI, and PostgreSQL.
+- [x] Create frontend/, backend/, database/, and Keycloak configuration.
+- [x] Add the white-and-blue theme and typed, documented starter code.
+- [x] Add `dev.docker-compose.yaml` with hot reload and MailHog.
+- [x] Document and verify the development environment.
 
-## 3. Keycloak authentication
+## 3. Authentication and API security
 
-- [x] Add a versioned development realm JSON.
-- [x] Enable self-registration with `client` as the default role.
-- [x] Add an `advisers` group that grants the `adviser` role.
-- [x] Seed realistic Client and Adviser test accounts.
-- [x] Add React login, registration, session, role, and logout support.
-- [x] Validate Keycloak tokens and roles in FastAPI.
-- [x] Protect financial routes with Client ownership checks.
-- [x] Protect review and approval routes with the `adviser` role.
+- [x] Add Keycloak login, registration, session, role, and logout support.
+- [ ] Create `/login` and redirect its login/registration actions to Keycloak.
+- [x] Seed realistic Client and Adviser accounts.
+- [ ] Route a Client to their own dashboard after login.
+- [ ] Route an Adviser to their assigned-clients dashboard after login.
+- [x] Protect Client financial data with ownership checks.
+- [x] Protect review and approval actions with the `adviser` role.
+- [x] Keep roles in Keycloak as the source of truth.
 
-## 4. Shared financial view
+## 4. Brokerage client management
 
-- [ ] Create /dashboard and /client/:id.
-- [ ] Show Assets, Liabilities, Net Worth, Income, and Expenses.
-- [ ] Show Goal and Insurance in one Products table.
-- [ ] Reuse the same financial/product components for both roles.
-- [ ] Show Goal details and a progress bar.
+- [ ] Show the Adviser a table of assigned clients.
+- [ ] Let the Adviser add a Client profile with name and email.
+- [ ] Link the Client profile to the brokerage, Adviser, and matching Keycloak account.
+- [ ] Let the Adviser open `/client/:id` only for an assigned Client.
 
-## 5. Insurance workflow
+## 5. Shared financial and product view
 
-- [ ] Show policy, provider, premium, cover, and status.
-- [ ] Let the Client submit a change request.
-- [ ] Create a notification and adviser email on submission.
-- [ ] Let the Adviser review the request.
-- [ ] Add Approve, Request changes, and Reject.
-- [ ] Notify the Client after the decision.
-- [ ] Never allow the Client to approve a request.
+- [ ] Create `/dashboard` and `/client/:id` using shared components.
+- [ ] Show Assets, Liabilities, Net Worth, Monthly Income, and Expenses.
+- [ ] Show the Client's Goal and Insurance products in one table.
+- [ ] Open product details in a simple panel or dialog when clicked.
+- [ ] Show Goal name, start/current/target amounts, start/end dates, status, and progress bar.
+- [ ] Show Insurance provider, product, policy number, premium, cover, and status.
 
-## 6. Notifications
+For this PoC, use seeded products. Product creation is deferred.
 
-- [ ] Create /notifications with newest activity first.
-- [ ] Show title, message, time, read state, and related product.
-- [ ] Record every submission, review, decision, and Goal update.
-- [ ] Send development email through MailHog.
+## 6. Client-Adviser chat
 
-## 7. Demo check
+- [ ] Add one persistent in-app conversation per Client and assigned Adviser.
+- [ ] Show messages oldest-to-newest with sender and date/time.
+- [ ] Let either participant send a text message from the shared client view.
+- [ ] Prevent Clients and unassigned Advisers from reading another conversation.
+- [ ] Create an unread notification when a new message arrives.
+- [ ] Refresh new messages with simple polling; do not add WebSockets.
 
-- [ ] Client sees finances, Goal, and Insurance.
-- [ ] Client submits an Insurance request.
-- [ ] Adviser receives a notification and email.
-- [ ] Adviser approves the request.
-- [ ] Client receives a notification and email.
-- [ ] Client logs back in and sees Approved.
+## 7. Motor claim workflow
+
+- [ ] Add `Report an Accident` to the Client's owned motor-insurance details.
+- [ ] Show the scene checklist: location, photos, parties, vehicles, licences, witnesses, insurance details, and police report within 48 hours.
+- [ ] Collect incident date/time, location, description, police status, and case number.
+- [ ] Collect driver/use, witness, other vehicle/property, and third-party insurance details.
+- [ ] Accept demo photo/document selections and store their filenames only.
+- [x] Provide protected Client submission/history and Adviser review APIs.
+- [ ] Add Adviser controls for `Under Review`, `Approved`, `Changes Required`, or `Rejected`.
+- [x] Block Client tokens from approving or reviewing a claim.
+
+## 8. Notifications and email
+
+- [ ] Create `/notifications` for both Client and Adviser.
+- [ ] Show title, message, date/time, read state, and related Client/product.
+- [ ] Log new messages, claim submission, review, and decision events.
+- [ ] Email the Adviser when a Client submits a claim.
+- [ ] Email the Client when the Adviser makes a decision.
+- [ ] Use MailHog for development email.
+
+## 9. Demo check
+
+- [ ] Client logs in through Keycloak and sees only their finances and products.
+- [ ] Client opens their Goal and sees its progress.
+- [ ] Client chats with their Adviser.
+- [ ] Client opens their motor insurance and submits a claim.
+- [ ] Adviser logs in, sees the Client, message, and pending claim.
+- [ ] Adviser replies and reviews the claim.
+- [ ] Client receives notifications/email and sees the updated claim status.
 - [ ] Fix demo blockers; defer everything else.
 
 ## Deferred
 
-- [ ] Production authentication, managed database, and migrations.
-- [ ] Real insurer integrations and production email.
-- [ ] Extra roles, separate product pages, AI, and advanced compliance.
-- [ ] Visual polish beyond a clear responsive demo.
+- [ ] Adding investments, policies, and Goals through the UI.
+- [ ] Real provider APIs, assessors, repairers, and claim automation.
+- [ ] WhatsApp/SMS integration, voice notes, AI, and cloud file storage.
+- [ ] Multiple brokerage tenancy, billing, and transaction-fee collection.
+- [ ] Advanced compliance, production authentication, and managed infrastructure.
