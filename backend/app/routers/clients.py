@@ -105,21 +105,23 @@ def get_own_client_overview(
 def add_client_goal(
     client_id: str,
     goal_data: GoalCreate,
-    client: Annotated[AuthenticatedUser, Depends(require_role("client"))],
+    user: Annotated[AuthenticatedUser, Depends(get_current_user)],
     session: Annotated[Session, Depends(get_database_session)],
 ) -> Product:
-    """Let a Client add a financial Goal to their own dashboard."""
+    """Let a Client or assigned Adviser add a financial Goal."""
 
-    if "adviser" in client.roles:
+    is_adviser = "adviser" in user.roles
+    if not is_adviser and "client" not in user.roles:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Adviser accounts cannot create Client-owned Goals.",
+            detail="A ClientConnect role is required.",
         )
 
     goal = create_client_goal(
         session=session,
         client_id=client_id,
-        client_email=require_email(client),
+        user_email=require_email(user),
+        is_adviser=is_adviser,
         name=goal_data.name,
         starting_balance=goal_data.starting_balance,
         target_amount=goal_data.target_amount,
@@ -129,7 +131,7 @@ def add_client_goal(
     if goal is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Client profile not found.",
+            detail="Client not found.",
         )
     return goal
 

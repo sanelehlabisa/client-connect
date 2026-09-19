@@ -198,11 +198,9 @@ export function ClientOverviewPanel({
               Goals and insurance in one simple view.
             </Typography>
           </Box>
-          {!auth.roles.includes("adviser") && (
-            <Button onClick={() => setGoalDialogOpen(true)} variant="contained">
-              Add Goal
-            </Button>
-          )}
+          <Button onClick={() => setGoalDialogOpen(true)} variant="contained">
+            Add Goal
+          </Button>
         </Box>
         <Table aria-label={`${overview.name} products`}>
           <TableHead>

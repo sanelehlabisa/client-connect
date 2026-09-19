@@ -266,14 +266,15 @@ def create_client_profile(
 def create_client_goal(
     session: Session,
     client_id: str,
-    client_email: str,
+    user_email: str,
+    is_adviser: bool,
     name: str,
     starting_balance: Decimal,
     target_amount: Decimal,
     start_date: date,
     target_date: date,
 ) -> Product | None:
-    """Create a Goal only for the Client profile owned by the current user."""
+    """Create a Goal for an owned or assigned Client profile."""
 
     goal_id = str(uuid4())
     details = json.dumps(
@@ -307,15 +308,21 @@ def create_client_goal(
                 CAST(:details AS JSONB)
             FROM clients
             JOIN users AS client_user ON client_user.id = clients.user_id
+            JOIN users AS adviser_user ON adviser_user.id = clients.adviser_id
             WHERE clients.id = :client_id
-              AND client_user.email = :client_email
+              AND (
+                    (:is_adviser AND adviser_user.email = :user_email)
+                    OR
+                    (NOT :is_adviser AND client_user.email = :user_email)
+              )
             RETURNING id, product_type, name, provider, status, details
             """
         ),
         {
             "goal_id": goal_id,
             "client_id": client_id,
-            "client_email": client_email,
+            "user_email": user_email,
+            "is_adviser": is_adviser,
             "name": name,
             "details": details,
         },
