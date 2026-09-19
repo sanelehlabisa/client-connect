@@ -138,7 +138,12 @@ export function AccidentReportDialog({
         {submittedRequest ? (
           <Alert severity="success">
             Your accident report was submitted successfully. Its current status
-            is {submittedRequest.status}.
+            is {submittedRequest.status}. Provider claim number:{" "}
+            <strong>
+              {submittedRequest.provider_claim_number ?? "Pending"}
+            </strong>
+            . Claims handler:{" "}
+            <strong>{submittedRequest.claims_handler ?? "Pending"}</strong>.
           </Alert>
         ) : (
           <Box component="form" id="accident-report-form" onSubmit={(event) => void handleSubmit(event)}>

@@ -142,6 +142,22 @@ function ReviewDialog({
       <DialogContent dividers>
         <Stack spacing={3}>
           {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+          <Box
+            sx={{
+              display: "grid",
+              gap: 2.5,
+              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+            }}
+          >
+            <Detail
+              label="Provider claim number"
+              value={currentRequest.provider_claim_number ?? "Pending"}
+            />
+            <Detail
+              label="Claims handler"
+              value={currentRequest.claims_handler ?? "Pending"}
+            />
+          </Box>
           {report ? (
             <Box
               sx={{
@@ -325,6 +341,7 @@ export function InsuranceReviewQueue({
             <TableRow>
               <TableCell>Client</TableCell>
               <TableCell>Product</TableCell>
+              <TableCell>Claim number</TableCell>
               <TableCell>Submitted</TableCell>
               <TableCell>Status</TableCell>
               <TableCell align="right">Action</TableCell>
@@ -333,7 +350,7 @@ export function InsuranceReviewQueue({
           <TableBody>
             {requests.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5}>
+                <TableCell colSpan={6}>
                   <Typography color="text.secondary" textAlign="center">
                     No claims are waiting for review.
                   </Typography>
@@ -344,6 +361,9 @@ export function InsuranceReviewQueue({
               <TableRow key={request.id}>
                 <TableCell>{request.client_name}</TableCell>
                 <TableCell>{request.product_name}</TableCell>
+                <TableCell>
+                  {request.provider_claim_number ?? "Pending"}
+                </TableCell>
                 <TableCell>
                   {dateTime.format(new Date(request.created_at))}
                 </TableCell>

@@ -7,6 +7,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.email_service import send_email
+from app.provider_gateway import submit_claim
 from app.schemas import InsuranceRequest, InsuranceRequestStatus
 
 ALLOWED_STATUS_TRANSITIONS: dict[str, set[str]] = {
@@ -59,6 +60,8 @@ def _insurance_request(row: Any) -> InsuranceRequest:
         request_type=row.request_type,
         details=row.details,
         status=row.status,
+        provider_claim_number=row.provider_claim_number,
+        claims_handler=row.claims_handler,
         created_at=row.created_at,
     )
 
@@ -78,6 +81,8 @@ def _find_request(session: Session, request_id: str) -> InsuranceRequest:
                 insurance_requests.request_type,
                 insurance_requests.details,
                 insurance_requests.status,
+                insurance_requests.provider_claim_number,
+                insurance_requests.claims_handler,
                 insurance_requests.created_at
             FROM insurance_requests
             JOIN products ON products.id = insurance_requests.product_id
@@ -142,6 +147,27 @@ def create_insurance_request(
         session.rollback()
         return None
 
+    provider = session.execute(
+        text("SELECT provider FROM products WHERE id = :product_id"),
+        {"product_id": product_id},
+    ).scalar_one()
+    acknowledgement = submit_claim(provider, inserted_id)
+    session.execute(
+        text(
+            """
+            UPDATE insurance_requests
+            SET
+                provider_claim_number = :provider_claim_number,
+                claims_handler = :claims_handler
+            WHERE id = :request_id
+            """
+        ),
+        {
+            "request_id": inserted_id,
+            "provider_claim_number": acknowledgement.claim_number,
+            "claims_handler": acknowledgement.claims_handler,
+        },
+    )
     request = _find_request(session, inserted_id)
     adviser_email = session.execute(
         text(
@@ -184,7 +210,8 @@ def create_insurance_request(
             "title": f"New claim from {request.client_name}",
             "message": (
                 f"{request.client_name} submitted a claim for "
-                f"{request.product_name}."
+                f"{request.product_name}. Provider reference: "
+                f"{request.provider_claim_number}."
             ),
         },
     )
@@ -194,7 +221,8 @@ def create_insurance_request(
         subject=f"New claim from {request.client_name}",
         body=(
             f"{request.client_name} submitted a claim for "
-            f"{request.product_name}.\n\n"
+            f"{request.product_name}.\n"
+            f"Provider reference: {request.provider_claim_number}.\n\n"
             "Sign in to RSF ClientConnect to review it."
         ),
     )
@@ -245,6 +273,8 @@ def list_client_insurance_requests(
                 insurance_requests.request_type,
                 insurance_requests.details,
                 insurance_requests.status,
+                insurance_requests.provider_claim_number,
+                insurance_requests.claims_handler,
                 insurance_requests.created_at
             FROM insurance_requests
             JOIN products ON products.id = insurance_requests.product_id
@@ -277,6 +307,8 @@ def list_adviser_review_queue(
                 insurance_requests.request_type,
                 insurance_requests.details,
                 insurance_requests.status,
+                insurance_requests.provider_claim_number,
+                insurance_requests.claims_handler,
                 insurance_requests.created_at
             FROM insurance_requests
             JOIN products ON products.id = insurance_requests.product_id

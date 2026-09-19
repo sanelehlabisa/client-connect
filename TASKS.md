@@ -92,9 +92,15 @@ For this PoC, use seeded products. Product creation is deferred.
 - [x] Add Insurance policy creation through the UI.
 - [x] Add Investment creation through the UI.
 
+## Provider and claim automation
+
+- [x] Mock provider acknowledgement with a claim number and claims handler.
+- [ ] Track assessment, repair, car hire, collection, and claim closure.
+- [ ] Replace the mock acknowledgement with real provider APIs.
+
 ## Deferred
 
-- [ ] Real provider APIs, assessors, repairers, and claim automation.
+- [ ] Assessors, repairers, and advanced claim automation.
 - [ ] WhatsApp/SMS integration, voice notes, AI, and cloud file storage.
 - [ ] Multiple brokerage tenancy, billing, and transaction-fee collection.
 - [ ] Advanced compliance, production authentication, and managed infrastructure.

@@ -23,6 +23,8 @@ export type InsuranceRequest = {
   request_type: string;
   details: string;
   status: InsuranceRequestStatus;
+  provider_claim_number: string | null;
+  claims_handler: string | null;
   created_at: string;
 };
 

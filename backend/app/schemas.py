@@ -232,4 +232,6 @@ class InsuranceRequest(BaseModel):
     request_type: str
     details: str
     status: InsuranceRequestStatus
+    provider_claim_number: str | None
+    claims_handler: str | None
     created_at: datetime
