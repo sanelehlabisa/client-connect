@@ -31,7 +31,7 @@ export type ClientCreate = {
 
 export type Product = {
   id: string;
-  product_type: "GOAL" | "INSURANCE";
+  product_type: "GOAL" | "INSURANCE" | "INVESTMENT";
   name: string;
   provider: string;
   status: string;
@@ -60,6 +60,15 @@ export type InsuranceProductCreate = {
   policy_number: string;
   premium: number;
   cover_amount: number;
+};
+
+export type InvestmentProductCreate = {
+  name: string;
+  provider: string;
+  investment_type: string;
+  account_number: string;
+  current_value: number;
+  monthly_contribution: number;
 };
 
 /** Load one Client when the token owns or is assigned to that profile. */
@@ -192,6 +201,31 @@ export async function createInsuranceProduct(
       detail?: string;
     } | null;
     throw new Error(body?.detail ?? "The Insurance policy could not be added.");
+  }
+
+  return (await response.json()) as Product;
+}
+
+/** Add an Investment to an owned or assigned Client dashboard. */
+export async function createInvestmentProduct(
+  accessToken: string,
+  clientId: string,
+  product: InvestmentProductCreate,
+): Promise<Product> {
+  const response = await fetch(`${apiUrl}/clients/${clientId}/investments`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(product),
+  });
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as {
+      detail?: string;
+    } | null;
+    throw new Error(body?.detail ?? "The Investment could not be added.");
   }
 
   return (await response.json()) as Product;

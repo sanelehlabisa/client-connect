@@ -26,6 +26,7 @@ import { useAuth } from "../auth/AuthContext";
 import { AccidentReportDialog } from "./AccidentReportDialog";
 import { AddGoalDialog } from "./AddGoalDialog";
 import { AddInsuranceDialog } from "./AddInsuranceDialog";
+import { AddInvestmentDialog } from "./AddInvestmentDialog";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
 import { ChatPanel } from "./ChatPanel";
 
@@ -69,6 +70,11 @@ function productValue(product: Product): string {
     }
   }
 
+  if (product.product_type === "INVESTMENT") {
+    const currentValue = readNumber(product, "current_value");
+    return currentValue === null ? "-" : formatCurrency(currentValue);
+  }
+
   const premium = readNumber(product, "premium");
   return premium === null ? "-" : `${formatCurrency(premium)}/month`;
 }
@@ -86,6 +92,7 @@ export function ClientOverviewPanel({
   const [accidentProduct, setAccidentProduct] = useState<Product | null>(null);
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
   const [insuranceDialogOpen, setInsuranceDialogOpen] = useState(false);
+  const [investmentDialogOpen, setInvestmentDialogOpen] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -200,9 +207,15 @@ export function ClientOverviewPanel({
               Goals and insurance in one simple view.
             </Typography>
           </Box>
-          <Stack direction="row" spacing={1}>
+          <Stack direction="row" flexWrap="wrap" spacing={1} useFlexGap>
             <Button onClick={() => setGoalDialogOpen(true)} variant="outlined">
               Add Goal
+            </Button>
+            <Button
+              onClick={() => setInvestmentDialogOpen(true)}
+              variant="outlined"
+            >
+              Add Investment
             </Button>
             <Button
               onClick={() => setInsuranceDialogOpen(true)}
@@ -239,7 +252,11 @@ export function ClientOverviewPanel({
                   <Typography fontWeight={600}>{product.name}</Typography>
                 </TableCell>
                 <TableCell>
-                  {product.product_type === "GOAL" ? "Goal" : "Insurance"}
+                  {product.product_type === "GOAL"
+                    ? "Goal"
+                    : product.product_type === "INVESTMENT"
+                      ? "Investment"
+                      : "Insurance"}
                 </TableCell>
                 <TableCell>{product.provider}</TableCell>
                 <TableCell>{productValue(product)}</TableCell>
@@ -313,6 +330,24 @@ export function ClientOverviewPanel({
           );
         }}
         open={insuranceDialogOpen}
+      />
+      <AddInvestmentDialog
+        clientId={overview.id}
+        getAccessToken={getAccessToken}
+        onClose={() => setInvestmentDialogOpen(false)}
+        onCreated={(product) => {
+          setOverview((current) =>
+            current
+              ? {
+                  ...current,
+                  products: [...current.products, product].sort(
+                    (first, second) => first.name.localeCompare(second.name),
+                  ),
+                }
+              : current,
+          );
+        }}
+        open={investmentDialogOpen}
       />
     </Stack>
   );

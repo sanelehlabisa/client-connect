@@ -16,6 +16,7 @@ from app.client_repository import (
     create_client_profile,
     create_client_goal,
     create_insurance_product,
+    create_investment_product,
     find_client_overview,
     find_own_client_overview,
     list_assigned_clients,
@@ -28,6 +29,7 @@ from app.schemas import (
     ClientSummary,
     GoalCreate,
     InsuranceProductCreate,
+    InvestmentProductCreate,
     Product,
 )
 
@@ -169,6 +171,46 @@ def add_insurance_product(
         policy_number=product_data.policy_number,
         premium=product_data.premium,
         cover_amount=product_data.cover_amount,
+    )
+    if product is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Client not found.",
+        )
+    return product
+
+
+@router.post(
+    "/{client_id}/investments",
+    response_model=Product,
+    status_code=status.HTTP_201_CREATED,
+)
+def add_investment_product(
+    client_id: str,
+    product_data: InvestmentProductCreate,
+    user: Annotated[AuthenticatedUser, Depends(get_current_user)],
+    session: Annotated[Session, Depends(get_database_session)],
+) -> Product:
+    """Let a Client or assigned Adviser add an Investment."""
+
+    is_adviser = "adviser" in user.roles
+    if not is_adviser and "client" not in user.roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="A ClientConnect role is required.",
+        )
+
+    product = create_investment_product(
+        session=session,
+        client_id=client_id,
+        user_email=require_email(user),
+        is_adviser=is_adviser,
+        name=product_data.name,
+        provider=product_data.provider,
+        investment_type=product_data.investment_type,
+        account_number=product_data.account_number,
+        current_value=product_data.current_value,
+        monthly_contribution=product_data.monthly_contribution,
     )
     if product is None:
         raise HTTPException(

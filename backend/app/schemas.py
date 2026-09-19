@@ -29,7 +29,7 @@ class Product(BaseModel):
     """One Goal or Insurance product shown in the shared product table."""
 
     id: str
-    product_type: Literal["GOAL", "INSURANCE"]
+    product_type: Literal["GOAL", "INSURANCE", "INVESTMENT"]
     name: str
     provider: str
     status: str
@@ -83,6 +83,30 @@ class InsuranceProductCreate(BaseModel):
     @classmethod
     def strip_insurance_text(cls, value: object) -> object:
         """Remove accidental spaces around Insurance policy fields."""
+
+        return value.strip() if isinstance(value, str) else value
+
+
+class InvestmentProductCreate(BaseModel):
+    """An Investment added to an owned or assigned Client dashboard."""
+
+    name: str = Field(min_length=2, max_length=120)
+    provider: str = Field(min_length=2, max_length=120)
+    investment_type: str = Field(min_length=2, max_length=80)
+    account_number: str = Field(min_length=2, max_length=80)
+    current_value: Decimal = Field(ge=0, max_digits=14, decimal_places=2)
+    monthly_contribution: Decimal = Field(ge=0, max_digits=14, decimal_places=2)
+
+    @field_validator(
+        "name",
+        "provider",
+        "investment_type",
+        "account_number",
+        mode="before",
+    )
+    @classmethod
+    def strip_investment_text(cls, value: object) -> object:
+        """Remove accidental spaces around Investment fields."""
 
         return value.strip() if isinstance(value, str) else value
 

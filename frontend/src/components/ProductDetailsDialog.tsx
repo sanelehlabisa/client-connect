@@ -84,7 +84,7 @@ function formatDate(value: string | null): string {
       });
 }
 
-/** Display type-specific Goal or Insurance details in one simple dialog. */
+/** Display type-specific Goal, Investment, or Insurance details. */
 export function ProductDetailsDialog({
   canReportAccident,
   onClose,
@@ -96,8 +96,11 @@ export function ProductDetailsDialog({
   }
 
   const isGoal = product.product_type === "GOAL";
+  const isInvestment = product.product_type === "INVESTMENT";
+  const isInsurance = product.product_type === "INSURANCE";
   const isMotorInsurance =
-    !isGoal && readText(product, "insurance_type")?.toLowerCase() === "motor";
+    isInsurance &&
+    readText(product, "insurance_type")?.toLowerCase() === "motor";
   const startingBalance = readNumber(product, "starting_balance");
   const currentValue = readNumber(product, "current_value");
   const targetAmount = readNumber(product, "target_amount");
@@ -112,7 +115,9 @@ export function ProductDetailsDialog({
         <Stack alignItems="flex-start" spacing={1}>
           <Chip
             color="primary"
-            label={isGoal ? "Goal" : "Insurance"}
+            label={
+              isGoal ? "Goal" : isInvestment ? "Investment" : "Insurance"
+            }
             size="small"
             variant="outlined"
           />
@@ -172,6 +177,33 @@ export function ProductDetailsDialog({
               />
             </Box>
           </Stack>
+        ) : isInvestment ? (
+          <Box
+            sx={{
+              display: "grid",
+              gap: 2.5,
+              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+            }}
+          >
+            <DetailItem label="Provider" value={product.provider} />
+            <DetailItem
+              label="Investment type"
+              value={readText(product, "investment_type") ?? "Not recorded"}
+            />
+            <DetailItem
+              label="Account number"
+              value={readText(product, "account_number") ?? "Not recorded"}
+            />
+            <DetailItem label="Status" value={product.status} />
+            <DetailItem
+              label="Current value"
+              value={formatMoney(readNumber(product, "current_value"))}
+            />
+            <DetailItem
+              label="Monthly contribution"
+              value={formatMoney(readNumber(product, "monthly_contribution"))}
+            />
+          </Box>
         ) : (
           <Box
             sx={{
