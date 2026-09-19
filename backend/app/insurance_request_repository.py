@@ -6,6 +6,7 @@ from uuid import uuid4
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.email_service import send_email
 from app.schemas import InsuranceRequest, InsuranceRequestStatus
 
 ALLOWED_STATUS_TRANSITIONS: dict[str, set[str]] = {
@@ -142,6 +143,18 @@ def create_insurance_request(
         return None
 
     request = _find_request(session, inserted_id)
+    adviser_email = session.execute(
+        text(
+            """
+            SELECT adviser_user.email
+            FROM products
+            JOIN clients ON clients.id = products.client_id
+            JOIN users AS adviser_user ON adviser_user.id = clients.adviser_id
+            WHERE products.id = :product_id
+            """
+        ),
+        {"product_id": request.product_id},
+    ).scalar_one()
     session.execute(
         text(
             """
@@ -176,6 +189,15 @@ def create_insurance_request(
         },
     )
     session.commit()
+    send_email(
+        recipient=adviser_email,
+        subject=f"New claim from {request.client_name}",
+        body=(
+            f"{request.client_name} submitted a claim for "
+            f"{request.product_name}.\n\n"
+            "Sign in to RSF ClientConnect to review it."
+        ),
+    )
     return request
 
 

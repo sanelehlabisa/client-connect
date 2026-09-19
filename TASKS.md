@@ -70,9 +70,9 @@ For this PoC, use seeded products. Product creation is deferred.
 - [x] Create `/notifications` for both Client and Adviser.
 - [x] Show title, message, date/time, read state, and related Client/product.
 - [x] Log new messages, claim submission, review, and decision events.
-- [ ] Email the Adviser when a Client submits a claim.
+- [x] Email the Adviser when a Client submits a claim.
 - [ ] Email the Client when the Adviser makes a decision.
-- [ ] Use MailHog for development email.
+- [x] Use MailHog for development email.
 
 ## 9. Demo check
 
