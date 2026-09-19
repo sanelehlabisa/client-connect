@@ -13,6 +13,25 @@ ALLOWED_STATUS_TRANSITIONS: dict[str, set[str]] = {
     "Under Review": {"Approved", "Changes Required", "Rejected"},
 }
 
+STATUS_NOTIFICATION_CONTENT: dict[str, tuple[str, str]] = {
+    "Under Review": (
+        "Claim review started",
+        "Your claim for {product_name} is now under review.",
+    ),
+    "Approved": (
+        "Claim approved",
+        "Your claim for {product_name} has been approved.",
+    ),
+    "Changes Required": (
+        "Claim changes required",
+        "Your adviser needs more information for your {product_name} claim.",
+    ),
+    "Rejected": (
+        "Claim not approved",
+        "Your claim for {product_name} was not approved.",
+    ),
+}
+
 
 class InvalidStatusTransitionError(Exception):
     """Raised when an Adviser attempts an out-of-order review decision."""
@@ -123,6 +142,39 @@ def create_insurance_request(
         return None
 
     request = _find_request(session, inserted_id)
+    session.execute(
+        text(
+            """
+            INSERT INTO notifications (
+                id,
+                user_id,
+                title,
+                message,
+                is_read,
+                product_id
+            )
+            SELECT
+                :notification_id,
+                clients.adviser_id,
+                :title,
+                :message,
+                FALSE,
+                products.id
+            FROM products
+            JOIN clients ON clients.id = products.client_id
+            WHERE products.id = :product_id
+            """
+        ),
+        {
+            "notification_id": str(uuid4()),
+            "product_id": request.product_id,
+            "title": f"New claim from {request.client_name}",
+            "message": (
+                f"{request.client_name} submitted a claim for "
+                f"{request.product_name}."
+            ),
+        },
+    )
     session.commit()
     return request
 
@@ -260,5 +312,41 @@ def update_insurance_request_status(
         {"request_id": request_id, "requested_status": requested_status},
     )
     request = _find_request(session, request_id)
+    notification_title, notification_message = STATUS_NOTIFICATION_CONTENT[
+        requested_status
+    ]
+    session.execute(
+        text(
+            """
+            INSERT INTO notifications (
+                id,
+                user_id,
+                title,
+                message,
+                is_read,
+                product_id
+            )
+            SELECT
+                :notification_id,
+                clients.user_id,
+                :title,
+                :message,
+                FALSE,
+                products.id
+            FROM insurance_requests
+            JOIN products ON products.id = insurance_requests.product_id
+            JOIN clients ON clients.id = products.client_id
+            WHERE insurance_requests.id = :request_id
+            """
+        ),
+        {
+            "notification_id": str(uuid4()),
+            "request_id": request_id,
+            "title": notification_title,
+            "message": notification_message.format(
+                product_name=request.product_name,
+            ),
+        },
+    )
     session.commit()
     return request
