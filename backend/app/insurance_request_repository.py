@@ -337,6 +337,9 @@ def update_insurance_request_status(
     notification_title, notification_message = STATUS_NOTIFICATION_CONTENT[
         requested_status
     ]
+    formatted_message = notification_message.format(
+        product_name=request.product_name,
+    )
     session.execute(
         text(
             """
@@ -365,10 +368,33 @@ def update_insurance_request_status(
             "notification_id": str(uuid4()),
             "request_id": request_id,
             "title": notification_title,
-            "message": notification_message.format(
-                product_name=request.product_name,
-            ),
+            "message": formatted_message,
         },
     )
+    client_email: str | None = None
+    if requested_status != "Under Review":
+        client_email = session.execute(
+            text(
+                """
+                SELECT client_user.email
+                FROM insurance_requests
+                JOIN products ON products.id = insurance_requests.product_id
+                JOIN clients ON clients.id = products.client_id
+                JOIN users AS client_user ON client_user.id = clients.user_id
+                WHERE insurance_requests.id = :request_id
+                """
+            ),
+            {"request_id": request_id},
+        ).scalar_one()
+
     session.commit()
+    if client_email is not None:
+        send_email(
+            recipient=client_email,
+            subject=notification_title,
+            body=(
+                f"{formatted_message}\n\n"
+                "Sign in to RSF ClientConnect to view your claim."
+            ),
+        )
     return request
