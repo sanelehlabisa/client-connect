@@ -12,6 +12,17 @@ CREATE TABLE clients (
     adviser_id VARCHAR(40) NOT NULL REFERENCES users(id)
 );
 
+CREATE TABLE messages (
+    id VARCHAR(40) PRIMARY KEY,
+    client_id VARCHAR(40) NOT NULL REFERENCES clients(id),
+    sender_user_id VARCHAR(40) NOT NULL REFERENCES users(id),
+    body TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX messages_client_created_at_idx
+    ON messages (client_id, created_at);
+
 CREATE TABLE financial_positions (
     client_id VARCHAR(40) PRIMARY KEY REFERENCES clients(id),
     assets NUMERIC(14, 2) NOT NULL,

@@ -23,6 +23,7 @@ import {
   type Product,
 } from "../api/clients";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
+import { ChatPanel } from "./ChatPanel";
 
 type ClientOverviewPanelProps = {
   clientId?: string;
@@ -227,6 +228,10 @@ export function ClientOverviewPanel({
           </TableBody>
         </Table>
       </TableContainer>
+      <ChatPanel
+        clientId={overview.id}
+        getAccessToken={getAccessToken}
+      />
       <ProductDetailsDialog
         onClose={() => setSelectedProduct(null)}
         product={selectedProduct}

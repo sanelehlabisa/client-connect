@@ -47,12 +47,12 @@ For this PoC, use seeded products. Product creation is deferred.
 
 ## 6. Client-Adviser chat
 
-- [ ] Add one persistent in-app conversation per Client and assigned Adviser.
-- [ ] Show messages oldest-to-newest with sender and date/time.
-- [ ] Let either participant send a text message from the shared client view.
-- [ ] Prevent Clients and unassigned Advisers from reading another conversation.
-- [ ] Create an unread notification when a new message arrives.
-- [ ] Refresh new messages with simple polling; do not add WebSockets.
+- [x] Add one persistent in-app conversation per Client and assigned Adviser.
+- [x] Show messages oldest-to-newest with sender and date/time.
+- [x] Let either participant send a text message from the shared client view.
+- [x] Prevent Clients and unassigned Advisers from reading another conversation.
+- [x] Create an unread notification when a new message arrives.
+- [x] Refresh new messages with simple polling; do not add WebSockets.
 
 ## 7. Motor claim workflow
 

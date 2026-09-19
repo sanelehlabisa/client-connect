@@ -88,6 +88,31 @@ class ClientProfile(BaseModel):
     email: str
 
 
+class ChatMessageCreate(BaseModel):
+    """One text message sent between a Client and assigned Adviser."""
+
+    body: str = Field(min_length=1, max_length=2000)
+
+    @field_validator("body", mode="before")
+    @classmethod
+    def strip_body(cls, value: object) -> object:
+        """Reject messages that contain only spaces."""
+
+        return value.strip() if isinstance(value, str) else value
+
+
+class ChatMessage(BaseModel):
+    """A persistent message in one Client-Adviser conversation."""
+
+    id: str
+    client_id: str
+    sender_name: str
+    sender_role: Literal["Client", "Adviser"]
+    body: str
+    sent_by_me: bool
+    created_at: datetime
+
+
 class InsuranceRequestCreate(BaseModel):
     """Information a Client submits for an insurance policy change."""
 

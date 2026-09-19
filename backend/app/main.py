@@ -10,6 +10,7 @@ from app.auth import AuthenticatedUser, get_current_user, require_role
 from app.database import database_is_ready
 from app.routers.clients import router as clients_router
 from app.routers.insurance_requests import client_router, review_router
+from app.routers.messages import router as messages_router
 from app.settings import get_settings
 
 settings = get_settings()
@@ -25,6 +26,7 @@ app.add_middleware(
 app.include_router(clients_router)
 app.include_router(client_router)
 app.include_router(review_router)
+app.include_router(messages_router)
 
 
 class HealthResponse(BaseModel):
