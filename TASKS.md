@@ -62,7 +62,7 @@ For this PoC, use seeded products. Product creation is deferred.
 - [x] Collect driver/use, witness, other vehicle/property, and third-party insurance details.
 - [x] Accept demo photo/document selections and store their filenames only.
 - [x] Provide protected Client submission/history and Adviser review APIs.
-- [ ] Add Adviser controls for `Under Review`, `Approved`, `Changes Required`, or `Rejected`.
+- [x] Add Adviser controls for `Under Review`, `Approved`, `Changes Required`, or `Rejected`.
 - [x] Block Client tokens from approving or reviewing a claim.
 
 ## 8. Notifications and email

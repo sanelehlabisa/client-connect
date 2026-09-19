@@ -11,6 +11,7 @@ import { useAuth } from "../auth/AuthContext";
 import { AssignedClientsTable } from "../components/AssignedClientsTable";
 import { AppHeader } from "../components/AppHeader";
 import { ClientOverviewPanel } from "../components/ClientOverviewPanel";
+import { InsuranceReviewQueue } from "../components/InsuranceReviewQueue";
 
 /** Show the correct dashboard shell for the authenticated Keycloak role. */
 export function DashboardPage() {
@@ -45,7 +46,10 @@ export function DashboardPage() {
             </Stack>
 
             {isAdviser ? (
-              <AssignedClientsTable getAccessToken={auth.getAccessToken} />
+              <>
+                <AssignedClientsTable getAccessToken={auth.getAccessToken} />
+                <InsuranceReviewQueue getAccessToken={auth.getAccessToken} />
+              </>
             ) : (
               <ClientOverviewPanel getAccessToken={auth.getAccessToken} />
             )}
