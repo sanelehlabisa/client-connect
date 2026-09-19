@@ -3,8 +3,7 @@
 CREATE TABLE users (
     id VARCHAR(40) PRIMARY KEY,
     name VARCHAR(120) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    role VARCHAR(20) NOT NULL CHECK (role IN ('CLIENT', 'ADVISER'))
+    email VARCHAR(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE clients (
@@ -50,9 +49,9 @@ CREATE TABLE notifications (
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO users (id, name, email, role) VALUES
-    ('adviser-1', 'Amina Daniels', 'amina@rsf.local', 'ADVISER'),
-    ('client-1', 'Thabo Mokoena', 'thabo@rsf.local', 'CLIENT');
+INSERT INTO users (id, name, email) VALUES
+    ('adviser-1', 'Amina Daniels', 'amina.daniels@example.test'),
+    ('client-1', 'Thabo Mokoena', 'thabo.mokoena@example.test');
 
 INSERT INTO clients (id, user_id, adviser_id) VALUES
     ('client-profile-1', 'client-1', 'adviser-1');

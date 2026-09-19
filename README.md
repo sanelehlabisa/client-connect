@@ -69,6 +69,17 @@ The React app uses the public `rsf-frontend` client with Authorization Code flow
 
 The imported users and passwords are development data only. Do not use this realm file or these credentials in production. Keycloak skips startup import when the realm already exists, so realm JSON changes require a fresh Keycloak development database or a manual administration change.
 
+## Protected financial API
+
+- `GET /clients` lists assigned clients and requires the `adviser` role.
+- `GET /clients/{client_id}` returns the shared financial overview.
+- Clients can only retrieve their own record.
+- Advisers can only retrieve records assigned to their Keycloak identity.
+- Inaccessible client records return `404` so their existence is not disclosed.
+
+Both endpoints require a Keycloak bearer token. Application users are matched to the trusted email claim in that token.
+Roles are not duplicated in the application database; Keycloak remains their source of truth.
+
 ## Common commands
 
 ~~~powershell

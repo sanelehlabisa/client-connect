@@ -27,7 +27,7 @@
 - [x] Seed realistic Client and Adviser test accounts.
 - [x] Add React login, registration, session, role, and logout support.
 - [x] Validate Keycloak tokens and roles in FastAPI.
-- [ ] Protect financial routes with Client ownership checks.
+- [x] Protect financial routes with Client ownership checks.
 - [ ] Protect review and approval routes with the `adviser` role.
 
 ## 4. Shared financial view
