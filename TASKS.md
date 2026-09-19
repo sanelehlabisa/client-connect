@@ -89,7 +89,8 @@ For this PoC, use seeded products. Product creation is deferred.
 
 - [x] Let Clients add financial Goals through the dashboard.
 - [x] Let Advisers add Goals for assigned Clients.
-- [ ] Add investment and policy creation through the UI.
+- [x] Add Insurance policy creation through the UI.
+- [ ] Add Investment creation through the UI.
 
 ## Deferred
 

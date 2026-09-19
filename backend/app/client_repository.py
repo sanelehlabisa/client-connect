@@ -333,3 +333,76 @@ def create_client_goal(
 
     session.commit()
     return _product(row)
+
+
+def create_insurance_product(
+    session: Session,
+    client_id: str,
+    user_email: str,
+    is_adviser: bool,
+    name: str,
+    provider: str,
+    insurance_type: str,
+    policy_number: str,
+    premium: Decimal,
+    cover_amount: Decimal,
+) -> Product | None:
+    """Create an Insurance policy for an owned or assigned Client profile."""
+
+    product_id = str(uuid4())
+    details = json.dumps(
+        {
+            "insurance_type": insurance_type,
+            "policy_number": policy_number,
+            "premium": str(premium),
+            "cover_amount": str(cover_amount),
+        }
+    )
+    row = session.execute(
+        text(
+            """
+            INSERT INTO products (
+                id,
+                client_id,
+                product_type,
+                name,
+                provider,
+                status,
+                details
+            )
+            SELECT
+                :product_id,
+                clients.id,
+                'INSURANCE',
+                :name,
+                :provider,
+                'Active',
+                CAST(:details AS JSONB)
+            FROM clients
+            JOIN users AS client_user ON client_user.id = clients.user_id
+            JOIN users AS adviser_user ON adviser_user.id = clients.adviser_id
+            WHERE clients.id = :client_id
+              AND (
+                    (:is_adviser AND adviser_user.email = :user_email)
+                    OR
+                    (NOT :is_adviser AND client_user.email = :user_email)
+              )
+            RETURNING id, product_type, name, provider, status, details
+            """
+        ),
+        {
+            "product_id": product_id,
+            "client_id": client_id,
+            "user_email": user_email,
+            "is_adviser": is_adviser,
+            "name": name,
+            "provider": provider,
+            "details": details,
+        },
+    ).one_or_none()
+    if row is None:
+        session.rollback()
+        return None
+
+    session.commit()
+    return _product(row)

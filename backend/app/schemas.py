@@ -63,6 +63,30 @@ class GoalCreate(BaseModel):
         return self
 
 
+class InsuranceProductCreate(BaseModel):
+    """An Insurance policy added to an owned or assigned Client dashboard."""
+
+    name: str = Field(min_length=2, max_length=120)
+    provider: str = Field(min_length=2, max_length=120)
+    insurance_type: str = Field(min_length=2, max_length=80)
+    policy_number: str = Field(min_length=2, max_length=80)
+    premium: Decimal = Field(ge=0, max_digits=14, decimal_places=2)
+    cover_amount: Decimal = Field(gt=0, max_digits=14, decimal_places=2)
+
+    @field_validator(
+        "name",
+        "provider",
+        "insurance_type",
+        "policy_number",
+        mode="before",
+    )
+    @classmethod
+    def strip_insurance_text(cls, value: object) -> object:
+        """Remove accidental spaces around Insurance policy fields."""
+
+        return value.strip() if isinstance(value, str) else value
+
+
 class ClientOverview(BaseModel):
     """Financial position and products shared by Client and Adviser views."""
 

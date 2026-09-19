@@ -53,6 +53,15 @@ export type GoalCreate = {
   target_date: string;
 };
 
+export type InsuranceProductCreate = {
+  name: string;
+  provider: string;
+  insurance_type: string;
+  policy_number: string;
+  premium: number;
+  cover_amount: number;
+};
+
 /** Load one Client when the token owns or is assigned to that profile. */
 export async function getClientOverview(
   accessToken: string,
@@ -155,6 +164,34 @@ export async function createGoal(
       detail?: string;
     } | null;
     throw new Error(body?.detail ?? "The Goal could not be created.");
+  }
+
+  return (await response.json()) as Product;
+}
+
+/** Add an Insurance policy to an owned or assigned Client dashboard. */
+export async function createInsuranceProduct(
+  accessToken: string,
+  clientId: string,
+  product: InsuranceProductCreate,
+): Promise<Product> {
+  const response = await fetch(
+    `${apiUrl}/clients/${clientId}/insurance-products`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(product),
+    },
+  );
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as {
+      detail?: string;
+    } | null;
+    throw new Error(body?.detail ?? "The Insurance policy could not be added.");
   }
 
   return (await response.json()) as Product;

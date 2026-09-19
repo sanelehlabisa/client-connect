@@ -25,6 +25,7 @@ import {
 import { useAuth } from "../auth/AuthContext";
 import { AccidentReportDialog } from "./AccidentReportDialog";
 import { AddGoalDialog } from "./AddGoalDialog";
+import { AddInsuranceDialog } from "./AddInsuranceDialog";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
 import { ChatPanel } from "./ChatPanel";
 
@@ -84,6 +85,7 @@ export function ClientOverviewPanel({
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [accidentProduct, setAccidentProduct] = useState<Product | null>(null);
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
+  const [insuranceDialogOpen, setInsuranceDialogOpen] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -198,9 +200,17 @@ export function ClientOverviewPanel({
               Goals and insurance in one simple view.
             </Typography>
           </Box>
-          <Button onClick={() => setGoalDialogOpen(true)} variant="contained">
-            Add Goal
-          </Button>
+          <Stack direction="row" spacing={1}>
+            <Button onClick={() => setGoalDialogOpen(true)} variant="outlined">
+              Add Goal
+            </Button>
+            <Button
+              onClick={() => setInsuranceDialogOpen(true)}
+              variant="contained"
+            >
+              Add policy
+            </Button>
+          </Stack>
         </Box>
         <Table aria-label={`${overview.name} products`}>
           <TableHead>
@@ -285,6 +295,24 @@ export function ClientOverviewPanel({
           );
         }}
         open={goalDialogOpen}
+      />
+      <AddInsuranceDialog
+        clientId={overview.id}
+        getAccessToken={getAccessToken}
+        onClose={() => setInsuranceDialogOpen(false)}
+        onCreated={(product) => {
+          setOverview((current) =>
+            current
+              ? {
+                  ...current,
+                  products: [...current.products, product].sort(
+                    (first, second) => first.name.localeCompare(second.name),
+                  ),
+                }
+              : current,
+          );
+        }}
+        open={insuranceDialogOpen}
       />
     </Stack>
   );
