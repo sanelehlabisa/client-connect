@@ -80,6 +80,15 @@ The imported users and passwords are development data only. Do not use this real
 Both endpoints require a Keycloak bearer token. Application users are matched to the trusted email claim in that token.
 Roles are not duplicated in the application database; Keycloak remains their source of truth.
 
+## Protected insurance workflow API
+
+- `POST /clients/{client_id}/insurance-requests` lets a Client submit a request for their own Insurance product.
+- `GET /clients/{client_id}/insurance-requests` shows request history to the owning Client or assigned Adviser.
+- `GET /insurance-requests` lists the assigned Adviser's active review queue.
+- `PATCH /insurance-requests/{request_id}` requires the `adviser` role and updates a request status.
+- Statuses must follow `Submitted` → `Under Review` → `Approved`, `Changes Required`, or `Rejected`.
+- A Client token cannot call review or approval routes.
+
 ## Common commands
 
 ~~~powershell

@@ -31,6 +31,17 @@ class AuthenticatedUser(BaseModel):
     roles: set[str]
 
 
+def require_email(user: AuthenticatedUser) -> str:
+    """Return the trusted email claim used to match an application user."""
+
+    if user.email is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The authenticated account does not have an email address.",
+        )
+    return user.email
+
+
 def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
 ) -> AuthenticatedUser:

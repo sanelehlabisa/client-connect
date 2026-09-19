@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from app.auth import AuthenticatedUser, get_current_user, require_role
 from app.database import database_is_ready
 from app.routers.clients import router as clients_router
+from app.routers.insurance_requests import client_router, review_router
 from app.settings import get_settings
 
 settings = get_settings()
@@ -22,6 +23,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(clients_router)
+app.include_router(client_router)
+app.include_router(review_router)
 
 
 class HealthResponse(BaseModel):
