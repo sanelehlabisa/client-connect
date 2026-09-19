@@ -24,6 +24,7 @@ import {
 } from "../api/clients";
 import { useAuth } from "../auth/AuthContext";
 import { AccidentReportDialog } from "./AccidentReportDialog";
+import { AddGoalDialog } from "./AddGoalDialog";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
 import { ChatPanel } from "./ChatPanel";
 
@@ -82,6 +83,7 @@ export function ClientOverviewPanel({
   const [error, setError] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [accidentProduct, setAccidentProduct] = useState<Product | null>(null);
+  const [goalDialogOpen, setGoalDialogOpen] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -177,13 +179,30 @@ export function ClientOverviewPanel({
       </Box>
 
       <TableContainer component={Paper} variant="outlined">
-        <Box sx={{ p: 3, pb: 1 }}>
-          <Typography component="h2" fontWeight={700} variant="h6">
-            Products
-          </Typography>
-          <Typography color="text.secondary" variant="body2">
-            Goals and insurance in one simple view.
-          </Typography>
+        <Box
+          sx={{
+            alignItems: { xs: "flex-start", sm: "center" },
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 2,
+            justifyContent: "space-between",
+            p: 3,
+            pb: 1,
+          }}
+        >
+          <Box>
+            <Typography component="h2" fontWeight={700} variant="h6">
+              Products
+            </Typography>
+            <Typography color="text.secondary" variant="body2">
+              Goals and insurance in one simple view.
+            </Typography>
+          </Box>
+          {!auth.roles.includes("adviser") && (
+            <Button onClick={() => setGoalDialogOpen(true)} variant="contained">
+              Add Goal
+            </Button>
+          )}
         </Box>
         <Table aria-label={`${overview.name} products`}>
           <TableHead>
@@ -250,6 +269,24 @@ export function ClientOverviewPanel({
         getAccessToken={getAccessToken}
         onClose={() => setAccidentProduct(null)}
         product={accidentProduct}
+      />
+      <AddGoalDialog
+        clientId={overview.id}
+        getAccessToken={getAccessToken}
+        onClose={() => setGoalDialogOpen(false)}
+        onCreated={(goal) => {
+          setOverview((current) =>
+            current
+              ? {
+                  ...current,
+                  products: [...current.products, goal].sort((first, second) =>
+                    first.name.localeCompare(second.name),
+                  ),
+                }
+              : current,
+          );
+        }}
+        open={goalDialogOpen}
       />
     </Stack>
   );

@@ -1,10 +1,10 @@
 """Request and response models shared by the API routes."""
 
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 InsuranceRequestStatus = Literal[
     "Submitted",
@@ -34,6 +34,33 @@ class Product(BaseModel):
     provider: str
     status: str
     details: dict[str, Any]
+
+
+class GoalCreate(BaseModel):
+    """A financial Goal created by a Client for their own dashboard."""
+
+    name: str = Field(min_length=2, max_length=120)
+    starting_balance: Decimal = Field(ge=0, max_digits=14, decimal_places=2)
+    target_amount: Decimal = Field(gt=0, max_digits=14, decimal_places=2)
+    start_date: date
+    target_date: date
+
+    @field_validator("name", mode="before")
+    @classmethod
+    def strip_name(cls, value: object) -> object:
+        """Remove accidental spaces around the Goal name."""
+
+        return value.strip() if isinstance(value, str) else value
+
+    @model_validator(mode="after")
+    def validate_goal_progress(self) -> "GoalCreate":
+        """Require a future target date and room for the Goal to grow."""
+
+        if self.target_date <= self.start_date:
+            raise ValueError("Target date must be after the start date.")
+        if self.target_amount <= self.starting_balance:
+            raise ValueError("Target amount must exceed the starting balance.")
+        return self
 
 
 class ClientOverview(BaseModel):

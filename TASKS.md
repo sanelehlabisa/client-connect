@@ -85,9 +85,14 @@ For this PoC, use seeded products. Product creation is deferred.
 - [x] Client receives notifications/email and sees the updated claim status.
 - [x] Fix demo blockers; defer everything else.
 
+## Next product-management work
+
+- [x] Let Clients add financial Goals through the dashboard.
+- [ ] Let Advisers add Goals for assigned Clients.
+- [ ] Add investment and policy creation through the UI.
+
 ## Deferred
 
-- [ ] Adding investments, policies, and Goals through the UI.
 - [ ] Real provider APIs, assessors, repairers, and claim automation.
 - [ ] WhatsApp/SMS integration, voice notes, AI, and cloud file storage.
 - [ ] Multiple brokerage tenancy, billing, and transaction-fee collection.

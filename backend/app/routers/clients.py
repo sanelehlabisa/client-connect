@@ -14,12 +14,20 @@ from app.auth import (
 from app.client_repository import (
     ClientEmailAlreadyExistsError,
     create_client_profile,
+    create_client_goal,
     find_client_overview,
     find_own_client_overview,
     list_assigned_clients,
 )
 from app.database import get_database_session
-from app.schemas import ClientCreate, ClientOverview, ClientProfile, ClientSummary
+from app.schemas import (
+    ClientCreate,
+    ClientOverview,
+    ClientProfile,
+    ClientSummary,
+    GoalCreate,
+    Product,
+)
 
 router = APIRouter(prefix="/clients", tags=["clients"])
 
@@ -87,6 +95,43 @@ def get_own_client_overview(
             detail="Client profile not found.",
         )
     return overview
+
+
+@router.post(
+    "/{client_id}/goals",
+    response_model=Product,
+    status_code=status.HTTP_201_CREATED,
+)
+def add_client_goal(
+    client_id: str,
+    goal_data: GoalCreate,
+    client: Annotated[AuthenticatedUser, Depends(require_role("client"))],
+    session: Annotated[Session, Depends(get_database_session)],
+) -> Product:
+    """Let a Client add a financial Goal to their own dashboard."""
+
+    if "adviser" in client.roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Adviser accounts cannot create Client-owned Goals.",
+        )
+
+    goal = create_client_goal(
+        session=session,
+        client_id=client_id,
+        client_email=require_email(client),
+        name=goal_data.name,
+        starting_balance=goal_data.starting_balance,
+        target_amount=goal_data.target_amount,
+        start_date=goal_data.start_date,
+        target_date=goal_data.target_date,
+    )
+    if goal is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Client profile not found.",
+        )
+    return goal
 
 
 @router.get("/{client_id}", response_model=ClientOverview)

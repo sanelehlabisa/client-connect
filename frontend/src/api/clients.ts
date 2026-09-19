@@ -45,6 +45,14 @@ export type ClientOverview = {
   products: Product[];
 };
 
+export type GoalCreate = {
+  name: string;
+  starting_balance: number;
+  target_amount: number;
+  start_date: string;
+  target_date: string;
+};
+
 /** Load one Client when the token owns or is assigned to that profile. */
 export async function getClientOverview(
   accessToken: string,
@@ -125,4 +133,29 @@ export async function createClientProfile(
   }
 
   return (await response.json()) as ClientProfile;
+}
+
+/** Add a financial Goal to the current Client's own dashboard. */
+export async function createGoal(
+  accessToken: string,
+  clientId: string,
+  goal: GoalCreate,
+): Promise<Product> {
+  const response = await fetch(`${apiUrl}/clients/${clientId}/goals`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(goal),
+  });
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as {
+      detail?: string;
+    } | null;
+    throw new Error(body?.detail ?? "The Goal could not be created.");
+  }
+
+  return (await response.json()) as Product;
 }

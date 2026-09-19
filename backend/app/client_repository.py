@@ -1,5 +1,8 @@
 """Database queries for client financial information."""
 
+import json
+from datetime import date
+from decimal import Decimal
 from typing import Any
 from uuid import uuid4
 
@@ -18,6 +21,19 @@ from app.schemas import (
 
 class ClientEmailAlreadyExistsError(Exception):
     """Raised when an Adviser tries to reuse an application-user email."""
+
+
+def _product(row: Any) -> Product:
+    """Build a typed financial product response from a database row."""
+
+    return Product(
+        id=row.id,
+        product_type=row.product_type,
+        name=row.name,
+        provider=row.provider,
+        status=row.status,
+        details=row.details,
+    )
 
 
 def _financial_position(row: Any) -> FinancialPosition:
@@ -85,17 +101,7 @@ def find_client_overview(
         {"client_id": client_id},
     ).all()
 
-    products = [
-        Product(
-            id=row.id,
-            product_type=row.product_type,
-            name=row.name,
-            provider=row.provider,
-            status=row.status,
-            details=row.details,
-        )
-        for row in product_rows
-    ]
+    products = [_product(row) for row in product_rows]
 
     return ClientOverview(
         id=client_row.id,
@@ -255,3 +261,68 @@ def create_client_profile(
         raise
 
     return ClientProfile(id=client_id, name=client_name, email=client_email)
+
+
+def create_client_goal(
+    session: Session,
+    client_id: str,
+    client_email: str,
+    name: str,
+    starting_balance: Decimal,
+    target_amount: Decimal,
+    start_date: date,
+    target_date: date,
+) -> Product | None:
+    """Create a Goal only for the Client profile owned by the current user."""
+
+    goal_id = str(uuid4())
+    details = json.dumps(
+        {
+            "starting_balance": str(starting_balance),
+            "current_value": str(starting_balance),
+            "target_amount": str(target_amount),
+            "start_date": start_date.isoformat(),
+            "target_date": target_date.isoformat(),
+        }
+    )
+    row = session.execute(
+        text(
+            """
+            INSERT INTO products (
+                id,
+                client_id,
+                product_type,
+                name,
+                provider,
+                status,
+                details
+            )
+            SELECT
+                :goal_id,
+                clients.id,
+                'GOAL',
+                :name,
+                'Royal Square',
+                'Active',
+                CAST(:details AS JSONB)
+            FROM clients
+            JOIN users AS client_user ON client_user.id = clients.user_id
+            WHERE clients.id = :client_id
+              AND client_user.email = :client_email
+            RETURNING id, product_type, name, provider, status, details
+            """
+        ),
+        {
+            "goal_id": goal_id,
+            "client_id": client_id,
+            "client_email": client_email,
+            "name": name,
+            "details": details,
+        },
+    ).one_or_none()
+    if row is None:
+        session.rollback()
+        return None
+
+    session.commit()
+    return _product(row)
