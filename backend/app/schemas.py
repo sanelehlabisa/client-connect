@@ -118,7 +118,7 @@ class InsuranceRequestCreate(BaseModel):
 
     product_id: str = Field(min_length=1, max_length=40)
     request_type: str = Field(min_length=2, max_length=80)
-    details: str = Field(min_length=2, max_length=2000)
+    details: str = Field(min_length=2, max_length=10000)
 
 
 class InsuranceRequestStatusUpdate(BaseModel):

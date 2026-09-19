@@ -14,7 +14,9 @@ import {
 import type { Product } from "../api/clients";
 
 type ProductDetailsDialogProps = {
+  canReportAccident: boolean;
   onClose: () => void;
+  onReportAccident: (product: Product) => void;
   product: Product | null;
 };
 
@@ -84,7 +86,9 @@ function formatDate(value: string | null): string {
 
 /** Display type-specific Goal or Insurance details in one simple dialog. */
 export function ProductDetailsDialog({
+  canReportAccident,
   onClose,
+  onReportAccident,
   product,
 }: ProductDetailsDialogProps) {
   if (!product) {
@@ -92,6 +96,8 @@ export function ProductDetailsDialog({
   }
 
   const isGoal = product.product_type === "GOAL";
+  const isMotorInsurance =
+    !isGoal && readText(product, "insurance_type")?.toLowerCase() === "motor";
   const startingBalance = readNumber(product, "starting_balance");
   const currentValue = readNumber(product, "current_value");
   const targetAmount = readNumber(product, "target_amount");
@@ -175,6 +181,10 @@ export function ProductDetailsDialog({
             }}
           >
             <DetailItem label="Provider" value={product.provider} />
+            <DetailItem
+              label="Insurance type"
+              value={readText(product, "insurance_type") ?? "Not recorded"}
+            />
             <DetailItem label="Status" value={product.status} />
             <DetailItem
               label="Policy number"
@@ -193,6 +203,14 @@ export function ProductDetailsDialog({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Close</Button>
+        {isMotorInsurance && canReportAccident && (
+          <Button
+            onClick={() => onReportAccident(product)}
+            variant="contained"
+          >
+            Report an Accident
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );

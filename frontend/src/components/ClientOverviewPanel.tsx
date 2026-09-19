@@ -22,6 +22,8 @@ import {
   type ClientOverview,
   type Product,
 } from "../api/clients";
+import { useAuth } from "../auth/AuthContext";
+import { AccidentReportDialog } from "./AccidentReportDialog";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
 import { ChatPanel } from "./ChatPanel";
 
@@ -74,10 +76,12 @@ export function ClientOverviewPanel({
   clientId,
   getAccessToken,
 }: ClientOverviewPanelProps) {
+  const auth = useAuth();
   const [overview, setOverview] = useState<ClientOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [accidentProduct, setAccidentProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -233,8 +237,19 @@ export function ClientOverviewPanel({
         getAccessToken={getAccessToken}
       />
       <ProductDetailsDialog
+        canReportAccident={!auth.roles.includes("adviser")}
         onClose={() => setSelectedProduct(null)}
+        onReportAccident={(product) => {
+          setSelectedProduct(null);
+          setAccidentProduct(product);
+        }}
         product={selectedProduct}
+      />
+      <AccidentReportDialog
+        clientId={overview.id}
+        getAccessToken={getAccessToken}
+        onClose={() => setAccidentProduct(null)}
+        product={accidentProduct}
       />
     </Stack>
   );

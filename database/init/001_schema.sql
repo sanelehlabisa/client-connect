@@ -93,5 +93,5 @@ VALUES
         'Car Insurance',
         'Santam',
         'Active',
-        '{"policy_number": "CAR-10001", "premium": 1200, "cover_amount": 350000}'
+        '{"insurance_type": "Motor", "policy_number": "CAR-10001", "premium": 1200, "cover_amount": 350000}'
     );

@@ -56,11 +56,11 @@ For this PoC, use seeded products. Product creation is deferred.
 
 ## 7. Motor claim workflow
 
-- [ ] Add `Report an Accident` to the Client's owned motor-insurance details.
-- [ ] Show the scene checklist: location, photos, parties, vehicles, licences, witnesses, insurance details, and police report within 48 hours.
-- [ ] Collect incident date/time, location, description, police status, and case number.
-- [ ] Collect driver/use, witness, other vehicle/property, and third-party insurance details.
-- [ ] Accept demo photo/document selections and store their filenames only.
+- [x] Add `Report an Accident` to the Client's owned motor-insurance details.
+- [x] Show the scene checklist: location, photos, parties, vehicles, licences, witnesses, insurance details, and police report within 48 hours.
+- [x] Collect incident date/time, location, description, police status, and case number.
+- [x] Collect driver/use, witness, other vehicle/property, and third-party insurance details.
+- [x] Accept demo photo/document selections and store their filenames only.
 - [x] Provide protected Client submission/history and Adviser review APIs.
 - [ ] Add Adviser controls for `Under Review`, `Approved`, `Changes Required`, or `Rejected`.
 - [x] Block Client tokens from approving or reviewing a claim.
