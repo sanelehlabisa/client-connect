@@ -20,6 +20,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { Link } from "react-router-dom";
 
 import {
   createClientProfile,
@@ -285,6 +286,7 @@ export function AssignedClientsTable({
               <TableCell align="right">Net worth</TableCell>
               <TableCell align="right">Products</TableCell>
               <TableCell align="right">Pending actions</TableCell>
+              <TableCell align="right">Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -312,6 +314,15 @@ export function AssignedClientsTable({
                       size="small"
                       variant="outlined"
                     />
+                  </TableCell>
+                  <TableCell align="right">
+                    <Button
+                      component={Link}
+                      size="small"
+                      to={`/client/${client.id}`}
+                    >
+                      Open
+                    </Button>
                   </TableCell>
                 </TableRow>
               );

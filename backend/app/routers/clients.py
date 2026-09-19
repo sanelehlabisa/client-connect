@@ -15,6 +15,7 @@ from app.client_repository import (
     ClientEmailAlreadyExistsError,
     create_client_profile,
     find_client_overview,
+    find_own_client_overview,
     list_assigned_clients,
 )
 from app.database import get_database_session
@@ -70,6 +71,22 @@ def add_client_profile(
             detail="Adviser profile not found.",
         )
     return client
+
+
+@router.get("/me", response_model=ClientOverview)
+def get_own_client_overview(
+    user: Annotated[AuthenticatedUser, Depends(get_current_user)],
+    session: Annotated[Session, Depends(get_database_session)],
+) -> ClientOverview:
+    """Return the Client profile linked to the authenticated identity."""
+
+    overview = find_own_client_overview(session, require_email(user))
+    if overview is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Client profile not found.",
+        )
+    return overview
 
 
 @router.get("/{client_id}", response_model=ClientOverview)

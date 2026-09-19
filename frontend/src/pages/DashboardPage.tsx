@@ -1,18 +1,16 @@
 import {
   Alert,
-  AppBar,
   Box,
-  Button,
   Chip,
   Container,
-  Paper,
   Stack,
-  Toolbar,
   Typography,
 } from "@mui/material";
 
 import { useAuth } from "../auth/AuthContext";
 import { AssignedClientsTable } from "../components/AssignedClientsTable";
+import { AppHeader } from "../components/AppHeader";
+import { ClientOverviewPanel } from "../components/ClientOverviewPanel";
 
 /** Show the correct dashboard shell for the authenticated Keycloak role. */
 export function DashboardPage() {
@@ -22,16 +20,7 @@ export function DashboardPage() {
 
   return (
     <Box component="main" minHeight="100vh">
-      <AppBar color="inherit" elevation={0} position="static">
-        <Toolbar>
-          <Typography color="primary" fontWeight={700} sx={{ flexGrow: 1 }}>
-            RSF ClientConnect
-          </Typography>
-          <Button onClick={() => void auth.logout()} variant="outlined">
-            Log out
-          </Button>
-        </Toolbar>
-      </AppBar>
+      <AppHeader />
 
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         {!isAdviser && !isClient ? (
@@ -58,15 +47,7 @@ export function DashboardPage() {
             {isAdviser ? (
               <AssignedClientsTable getAccessToken={auth.getAccessToken} />
             ) : (
-              <Paper variant="outlined" sx={{ p: 3 }}>
-                <Typography fontWeight={700} gutterBottom>
-                  Financial overview
-                </Typography>
-                <Typography color="text.secondary">
-                  Your financial position and products will appear here in the
-                  next ticket.
-                </Typography>
-              </Paper>
+              <ClientOverviewPanel getAccessToken={auth.getAccessToken} />
             )}
           </Stack>
         )}

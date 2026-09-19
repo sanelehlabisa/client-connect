@@ -32,13 +32,13 @@
 - [x] Show the Adviser a table of assigned clients.
 - [x] Let the Adviser add a Client profile with name and email.
 - [x] Link the Client profile to the brokerage, Adviser, and matching Keycloak account.
-- [ ] Let the Adviser open `/client/:id` only for an assigned Client.
+- [x] Let the Adviser open `/client/:id` only for an assigned Client.
 
 ## 5. Shared financial and product view
 
-- [ ] Create `/dashboard` and `/client/:id` using shared components.
-- [ ] Show Assets, Liabilities, Net Worth, Monthly Income, and Expenses.
-- [ ] Show the Client's Goal and Insurance products in one table.
+- [x] Create `/dashboard` and `/client/:id` using shared components.
+- [x] Show Assets, Liabilities, Net Worth, Monthly Income, and Expenses.
+- [x] Show the Client's Goal and Insurance products in one table.
 - [ ] Open product details in a simple panel or dialog when clicked.
 - [ ] Show Goal name, start/current/target amounts, start/end dates, status, and progress bar.
 - [ ] Show Insurance provider, product, policy number, premium, cover, and status.

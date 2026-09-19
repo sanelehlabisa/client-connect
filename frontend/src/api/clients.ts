@@ -29,6 +29,61 @@ export type ClientCreate = {
   email: string;
 };
 
+export type Product = {
+  id: string;
+  product_type: "GOAL" | "INSURANCE";
+  name: string;
+  provider: string;
+  status: string;
+  details: Record<string, unknown>;
+};
+
+export type ClientOverview = {
+  id: string;
+  name: string;
+  financial_position: FinancialPosition;
+  products: Product[];
+};
+
+/** Load one Client when the token owns or is assigned to that profile. */
+export async function getClientOverview(
+  accessToken: string,
+  clientId: string,
+  signal?: AbortSignal,
+): Promise<ClientOverview> {
+  const response = await fetch(`${apiUrl}/clients/${clientId}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error("The Client could not be loaded.");
+  }
+
+  return (await response.json()) as ClientOverview;
+}
+
+/** Load the Client profile linked to the current Keycloak identity. */
+export async function getOwnClientOverview(
+  accessToken: string,
+  signal?: AbortSignal,
+): Promise<ClientOverview> {
+  const response = await fetch(`${apiUrl}/clients/me`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error("Your Client profile could not be loaded.");
+  }
+
+  return (await response.json()) as ClientOverview;
+}
+
 /** Load the clients assigned to the Adviser represented by the access token. */
 export async function getAssignedClients(
   accessToken: string,

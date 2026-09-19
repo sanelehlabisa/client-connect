@@ -105,6 +105,34 @@ def find_client_overview(
     )
 
 
+def find_own_client_overview(
+    session: Session,
+    user_email: str,
+) -> ClientOverview | None:
+    """Return the Client overview linked to the current identity email."""
+
+    client_id = session.execute(
+        text(
+            """
+            SELECT clients.id
+            FROM clients
+            JOIN users AS client_user ON client_user.id = clients.user_id
+            WHERE client_user.email = :user_email
+            """
+        ),
+        {"user_email": user_email},
+    ).scalar_one_or_none()
+    if client_id is None:
+        return None
+
+    return find_client_overview(
+        session=session,
+        client_id=client_id,
+        user_email=user_email,
+        is_adviser=False,
+    )
+
+
 def list_assigned_clients(
     session: Session,
     adviser_email: str,
