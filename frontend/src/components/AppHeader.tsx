@@ -23,6 +23,9 @@ export function AppHeader({ backLabel, backTo }: AppHeaderProps) {
         <Typography color="primary" fontWeight={700} sx={{ flexGrow: 1 }}>
           RSF ClientConnect
         </Typography>
+        <Button component={Link} to="/notifications">
+          Notifications
+        </Button>
         <Button onClick={() => void auth.logout()} variant="outlined">
           Log out
         </Button>

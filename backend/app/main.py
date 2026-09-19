@@ -11,6 +11,7 @@ from app.database import database_is_ready
 from app.routers.clients import router as clients_router
 from app.routers.insurance_requests import client_router, review_router
 from app.routers.messages import router as messages_router
+from app.routers.notifications import router as notifications_router
 from app.settings import get_settings
 
 settings = get_settings()
@@ -27,6 +28,7 @@ app.include_router(clients_router)
 app.include_router(client_router)
 app.include_router(review_router)
 app.include_router(messages_router)
+app.include_router(notifications_router)
 
 
 class HealthResponse(BaseModel):

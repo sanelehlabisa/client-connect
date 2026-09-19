@@ -113,6 +113,20 @@ class ChatMessage(BaseModel):
     created_at: datetime
 
 
+class NotificationItem(BaseModel):
+    """One notification belonging to the authenticated application user."""
+
+    id: str
+    title: str
+    message: str
+    is_read: bool
+    client_id: str | None
+    client_name: str | None
+    product_id: str | None
+    product_name: str | None
+    created_at: datetime
+
+
 class InsuranceRequestCreate(BaseModel):
     """Information a Client submits for an insurance policy change."""
 
