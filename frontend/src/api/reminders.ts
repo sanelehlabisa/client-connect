@@ -10,6 +10,13 @@ export type Reminder = {
   is_completed: boolean;
 };
 
+export type ReminderCreate = {
+  client_id: string;
+  title: string;
+  due_date: string;
+  audience: Reminder["audience"];
+};
+
 /** Load due-date ordered reminders for the current role. */
 export async function getReminders(
   accessToken: string,
@@ -25,4 +32,28 @@ export async function getReminders(
   }
 
   return (await response.json()) as Reminder[];
+}
+
+/** Let an Adviser schedule a reminder for an assigned Client. */
+export async function createReminder(
+  accessToken: string,
+  reminder: ReminderCreate,
+): Promise<Reminder> {
+  const response = await fetch(`${apiUrl}/reminders`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(reminder),
+  });
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as {
+      detail?: string;
+    } | null;
+    throw new Error(body?.detail ?? "The reminder could not be scheduled.");
+  }
+
+  return (await response.json()) as Reminder;
 }

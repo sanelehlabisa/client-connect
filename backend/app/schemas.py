@@ -225,6 +225,30 @@ class Reminder(BaseModel):
     is_completed: bool
 
 
+class ReminderCreate(BaseModel):
+    """A dated reminder scheduled by an Adviser for an assigned Client."""
+
+    client_id: str = Field(min_length=1, max_length=40)
+    title: str = Field(min_length=2, max_length=160)
+    due_date: date
+    audience: Literal["Client", "Adviser", "Both"]
+
+    @field_validator("title", mode="before")
+    @classmethod
+    def strip_reminder_title(cls, value: object) -> object:
+        """Remove accidental surrounding spaces from the title."""
+
+        return value.strip() if isinstance(value, str) else value
+
+    @model_validator(mode="after")
+    def validate_due_date(self) -> "ReminderCreate":
+        """Prevent newly scheduled reminders from starting overdue."""
+
+        if self.due_date < date.today():
+            raise ValueError("Due date cannot be in the past.")
+        return self
+
+
 class InsuranceRequestCreate(BaseModel):
     """Information a Client submits for an insurance policy change."""
 

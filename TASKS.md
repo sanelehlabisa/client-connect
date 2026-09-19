@@ -101,7 +101,7 @@ For this PoC, use seeded products. Product creation is deferred.
 ## Automated reminders
 
 - [x] Show role-appropriate seeded reminders with due dates.
-- [ ] Let Advisers create and schedule reminders for assigned Clients.
+- [x] Let Advisers create and schedule reminders for assigned Clients.
 - [ ] Send due reminders through in-app notifications and email.
 
 ## Deferred

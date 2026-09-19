@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   Alert,
   Box,
+  Button,
   Chip,
   CircularProgress,
   Paper,
@@ -17,6 +18,7 @@ import {
 
 import { getReminders, type Reminder } from "../api/reminders";
 import { useAuth } from "../auth/AuthContext";
+import { AddReminderDialog } from "./AddReminderDialog";
 
 type RemindersPanelProps = {
   getAccessToken: () => Promise<string | undefined>;
@@ -56,6 +58,8 @@ export function RemindersPanel({ getAccessToken }: RemindersPanelProps) {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [refreshNumber, setRefreshNumber] = useState(0);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
   const isAdviser = auth.roles.includes("adviser");
 
   useEffect(() => {
@@ -84,7 +88,7 @@ export function RemindersPanel({ getAccessToken }: RemindersPanelProps) {
 
     void loadReminders();
     return () => controller.abort();
-  }, [getAccessToken]);
+  }, [getAccessToken, refreshNumber]);
 
   if (loading) {
     return (
@@ -102,55 +106,81 @@ export function RemindersPanel({ getAccessToken }: RemindersPanelProps) {
   }
 
   return (
-    <TableContainer component={Paper} variant="outlined">
-      <Box sx={{ p: 3, pb: 1 }}>
-        <Typography component="h2" fontWeight={700} variant="h6">
-          Reminders
-        </Typography>
-        <Typography color="text.secondary" variant="body2">
-          Upcoming documents, renewals, and financial reviews.
-        </Typography>
-      </Box>
-      <Table aria-label="Reminders">
-        <TableHead>
-          <TableRow>
-            {isAdviser && <TableCell>Client</TableCell>}
-            <TableCell>Reminder</TableCell>
-            <TableCell>Audience</TableCell>
-            <TableCell>Due date</TableCell>
-            <TableCell>Status</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {reminders.length === 0 && (
-            <TableRow>
-              <TableCell colSpan={isAdviser ? 5 : 4}>
-                <Typography color="text.secondary" textAlign="center">
-                  No reminders are scheduled.
-                </Typography>
-              </TableCell>
-            </TableRow>
+    <>
+      <TableContainer component={Paper} variant="outlined">
+        <Stack
+          alignItems={{ xs: "flex-start", sm: "center" }}
+          direction={{ xs: "column", sm: "row" }}
+          justifyContent="space-between"
+          spacing={2}
+          sx={{ p: 3, pb: 1 }}
+        >
+          <Box>
+            <Typography component="h2" fontWeight={700} variant="h6">
+              Reminders
+            </Typography>
+            <Typography color="text.secondary" variant="body2">
+              Upcoming documents, renewals, and financial reviews.
+            </Typography>
+          </Box>
+          {isAdviser && (
+            <Button
+              onClick={() => setAddDialogOpen(true)}
+              variant="contained"
+            >
+              Schedule reminder
+            </Button>
           )}
-          {reminders.map((reminder) => {
-            const state = dueState(reminder);
-            return (
-              <TableRow key={reminder.id}>
-                {isAdviser && <TableCell>{reminder.client_name}</TableCell>}
-                <TableCell>{reminder.title}</TableCell>
-                <TableCell>{reminder.audience}</TableCell>
-                <TableCell>
-                  {reminderDate.format(
-                    new Date(`${reminder.due_date}T00:00:00`),
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Chip color={state.color} label={state.label} size="small" />
+        </Stack>
+        <Table aria-label="Reminders">
+          <TableHead>
+            <TableRow>
+              {isAdviser && <TableCell>Client</TableCell>}
+              <TableCell>Reminder</TableCell>
+              <TableCell>Audience</TableCell>
+              <TableCell>Due date</TableCell>
+              <TableCell>Status</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {reminders.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={isAdviser ? 5 : 4}>
+                  <Typography color="text.secondary" textAlign="center">
+                    No reminders are scheduled.
+                  </Typography>
                 </TableCell>
               </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </TableContainer>
+            )}
+            {reminders.map((reminder) => {
+              const state = dueState(reminder);
+              return (
+                <TableRow key={reminder.id}>
+                  {isAdviser && <TableCell>{reminder.client_name}</TableCell>}
+                  <TableCell>{reminder.title}</TableCell>
+                  <TableCell>{reminder.audience}</TableCell>
+                  <TableCell>
+                    {reminderDate.format(
+                      new Date(`${reminder.due_date}T00:00:00`),
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Chip color={state.color} label={state.label} size="small" />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      {isAdviser && (
+        <AddReminderDialog
+          getAccessToken={getAccessToken}
+          onClose={() => setAddDialogOpen(false)}
+          onCreated={() => setRefreshNumber((value) => value + 1)}
+          open={addDialogOpen}
+        />
+      )}
+    </>
   );
 }
