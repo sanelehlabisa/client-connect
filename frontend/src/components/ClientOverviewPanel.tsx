@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   Alert,
   Box,
+  Button,
   Chip,
   CircularProgress,
   Paper,
@@ -21,6 +22,7 @@ import {
   type ClientOverview,
   type Product,
 } from "../api/clients";
+import { ProductDetailsDialog } from "./ProductDetailsDialog";
 
 type ClientOverviewPanelProps = {
   clientId?: string;
@@ -40,7 +42,15 @@ function formatCurrency(value: number | string): string {
 
 /** Read a numeric product detail without trusting untyped JSON values. */
 function readNumber(product: Product, key: string): number | null {
-  const value = Number(product.details[key]);
+  const rawValue = product.details[key];
+  if (typeof rawValue !== "number" && typeof rawValue !== "string") {
+    return null;
+  }
+  if (typeof rawValue === "string" && rawValue.trim() === "") {
+    return null;
+  }
+
+  const value = Number(rawValue);
   return Number.isFinite(value) ? value : null;
 }
 
@@ -66,6 +76,7 @@ export function ClientOverviewPanel({
   const [overview, setOverview] = useState<ClientOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -177,12 +188,13 @@ export function ClientOverviewPanel({
               <TableCell>Provider</TableCell>
               <TableCell>Value / Progress</TableCell>
               <TableCell>Status</TableCell>
+              <TableCell align="right">Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {overview.products.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5}>
+                <TableCell colSpan={6}>
                   <Typography color="text.secondary" textAlign="center">
                     No products have been added yet.
                   </Typography>
@@ -202,11 +214,23 @@ export function ClientOverviewPanel({
                 <TableCell>
                   <Chip label={product.status} size="small" variant="outlined" />
                 </TableCell>
+                <TableCell align="right">
+                  <Button
+                    onClick={() => setSelectedProduct(product)}
+                    size="small"
+                  >
+                    View
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+      <ProductDetailsDialog
+        onClose={() => setSelectedProduct(null)}
+        product={selectedProduct}
+      />
     </Stack>
   );
 }

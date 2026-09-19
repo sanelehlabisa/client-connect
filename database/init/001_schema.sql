@@ -73,7 +73,7 @@ VALUES
         'Emergency Fund',
         'RSF',
         'Active',
-        '{"target_amount": 30000, "current_value": 15000, "start_date": "2026-01-01", "target_date": "2026-12-31"}'
+        '{"starting_balance": 0, "target_amount": 30000, "current_value": 15000, "start_date": "2026-01-01", "target_date": "2026-12-31"}'
     ),
     (
         'insurance-1',

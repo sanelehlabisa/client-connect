@@ -39,9 +39,9 @@
 - [x] Create `/dashboard` and `/client/:id` using shared components.
 - [x] Show Assets, Liabilities, Net Worth, Monthly Income, and Expenses.
 - [x] Show the Client's Goal and Insurance products in one table.
-- [ ] Open product details in a simple panel or dialog when clicked.
-- [ ] Show Goal name, start/current/target amounts, start/end dates, status, and progress bar.
-- [ ] Show Insurance provider, product, policy number, premium, cover, and status.
+- [x] Open product details in a simple panel or dialog when clicked.
+- [x] Show Goal name, start/current/target amounts, start/end dates, status, and progress bar.
+- [x] Show Insurance provider, product, policy number, premium, cover, and status.
 
 For this PoC, use seeded products. Product creation is deferred.
 
