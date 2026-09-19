@@ -76,14 +76,14 @@ For this PoC, use seeded products. Product creation is deferred.
 
 ## 9. Demo check
 
-- [ ] Client logs in through Keycloak and sees only their finances and products.
-- [ ] Client opens their Goal and sees its progress.
-- [ ] Client chats with their Adviser.
-- [ ] Client opens their motor insurance and submits a claim.
-- [ ] Adviser logs in, sees the Client, message, and pending claim.
-- [ ] Adviser replies and reviews the claim.
-- [ ] Client receives notifications/email and sees the updated claim status.
-- [ ] Fix demo blockers; defer everything else.
+- [x] Client logs in through Keycloak and sees only their finances and products.
+- [x] Client opens their Goal and sees its progress.
+- [x] Client chats with their Adviser.
+- [x] Client opens their motor insurance and submits a claim.
+- [x] Adviser logs in, sees the Client, message, and pending claim.
+- [x] Adviser replies and reviews the claim.
+- [x] Client receives notifications/email and sees the updated claim status.
+- [x] Fix demo blockers; defer everything else.
 
 ## Deferred
 
