@@ -265,7 +265,7 @@ export function AssignedClientsTable({
         >
           <Box>
             <Typography component="h2" fontWeight={700} variant="h6">
-              Assigned clients
+              Your clients
             </Typography>
             <Typography color="text.secondary" variant="body2">
               A quick view of each Client's financial position and open work.

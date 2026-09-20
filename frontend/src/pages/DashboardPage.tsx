@@ -1,11 +1,4 @@
-import {
-  Alert,
-  Box,
-  Chip,
-  Container,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Alert, Box, Container } from "@mui/material";
 import { Navigate } from "react-router-dom";
 
 import { useAuth } from "../auth/AuthContext";
@@ -33,28 +26,10 @@ export function DashboardPage() {
             This account does not have a ClientConnect role. Contact Royal
             Square for access.
           </Alert>
+        ) : isAdviser ? (
+          <AssignedClientsTable getAccessToken={auth.getAccessToken} />
         ) : (
-          <Stack spacing={3}>
-            <Stack alignItems="flex-start" spacing={1}>
-              <Chip
-                color="primary"
-                label={isAdviser ? "Adviser" : "Client"}
-                variant="outlined"
-              />
-              <Typography component="h1" variant="h1">
-                {isAdviser ? "Your clients" : "Your financial dashboard"}
-              </Typography>
-              <Typography color="text.secondary">
-                Welcome, {auth.displayName ?? "ClientConnect user"}.
-              </Typography>
-            </Stack>
-
-            {isAdviser ? (
-              <AssignedClientsTable getAccessToken={auth.getAccessToken} />
-            ) : (
-              <ClientOverviewPanel getAccessToken={auth.getAccessToken} />
-            )}
-          </Stack>
+          <ClientOverviewPanel getAccessToken={auth.getAccessToken} />
         )}
       </Container>
     </Box>

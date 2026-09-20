@@ -34,9 +34,9 @@
 
 ## 3. P0 - Simplified Adviser inbox and activity
 
-- [ ] Keep the Adviser dashboard to the shared header and one `Your clients`
+- [x] Keep the Adviser dashboard to the shared header and one `Your clients`
   list; remove the repeated role, name, welcome copy, and separate Claim reviews.
-- [ ] Do not add separate notification, reminder, or claim sections to the
+- [x] Do not add separate notification, reminder, or claim sections to the
   Adviser dashboard; open that work through the relevant Client and Product.
 - [ ] Add an additive activity/read model so every event has a Client, optional
   Product, timestamp, intended recipient, and read state.
