@@ -50,11 +50,13 @@
 
 ## 6. P1 - Simplified Client page
 
-- [x] Show the signed-in user's full name and role beside Log out.
+- [x] Show the signed-in user's name with their role underneath and a red icon Log out action.
+- [x] Add a small ClientConnect wordmark to the navigation bar.
 - [x] Use canonical Client-by-ID and Product-by-ID routes.
 - [x] Present the financial position as one compact label-and-value card.
 - [x] Keep the Client page focused on financial position, products, and chat.
 - [x] Send `Get Financial Advice` directly to the Adviser conversation.
+- [x] Limit new Client product actions to Goals and Investments.
 - [x] Show active automatic reminders inside the conversation instead of a separate table.
 - [ ] Link messages and activity to a Product so Product-by-ID can show a filtered interaction timeline.
 

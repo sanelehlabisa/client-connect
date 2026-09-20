@@ -77,6 +77,8 @@ recommendation algorithms for this hackathon.
   Compose.
 - Reuse the existing chat and shared Client components.
 - Keep the Client interface simple, white, and blue.
+- Keep Client product-creation actions limited to Goals and Investments;
+  existing Insurance records and their history remain readable.
 - Use additive SQL migrations and deterministic seed data.
 - Keep Keycloak as the source of truth for roles.
 - Enforce Client ownership and Adviser assignment in backend queries.

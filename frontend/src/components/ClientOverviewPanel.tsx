@@ -26,7 +26,6 @@ import {
 import { useAuth } from "../auth/AuthContext";
 import { AccidentReportDialog } from "./AccidentReportDialog";
 import { AddGoalDialog } from "./AddGoalDialog";
-import { AddInsuranceDialog } from "./AddInsuranceDialog";
 import { AddInvestmentDialog } from "./AddInvestmentDialog";
 import { ArchiveInsuranceDialog } from "./ArchiveInsuranceDialog";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
@@ -110,7 +109,6 @@ export function ClientOverviewPanel({
     useState<Product | null>(null);
   const [accidentProduct, setAccidentProduct] = useState<Product | null>(null);
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
-  const [insuranceDialogOpen, setInsuranceDialogOpen] = useState(false);
   const [investmentDialogOpen, setInvestmentDialogOpen] = useState(false);
   const chatSection = useRef<HTMLDivElement | null>(null);
   const isAdviser = auth.roles.includes("adviser");
@@ -191,41 +189,24 @@ export function ClientOverviewPanel({
   return (
     <Stack spacing={4}>
       {!isAdviser && (
-        <Paper
-          sx={{
-            alignItems: { xs: "flex-start", sm: "center" },
-            bgcolor: "#eef6ff",
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            gap: 2,
-            justifyContent: "space-between",
-            p: 3,
-          }}
-          variant="outlined"
-        >
-          <Box>
-            <Typography fontWeight={700} variant="h6">
-              Need help with your financial plan?
-            </Typography>
-            <Typography color="text.secondary">
-              Go straight to your private conversation with your Adviser.
-            </Typography>
-          </Box>
+        <Box display="flex" justifyContent="center">
           <Button
             onClick={() =>
               chatSection.current?.scrollIntoView({ behavior: "smooth" })
             }
-            variant="contained"
+            size="small"
+            variant="outlined"
           >
-            Get Financial Advice
+            Need Financial Advice?
           </Button>
-        </Paper>
+        </Box>
       )}
 
       <Paper
         aria-label="Financial position"
         variant="outlined"
         sx={{
+          alignSelf: "center",
           display: "grid",
           gridTemplateColumns: "1fr auto",
           maxWidth: 440,
@@ -269,7 +250,7 @@ export function ClientOverviewPanel({
               Products
             </Typography>
             <Typography color="text.secondary" variant="body2">
-              Goals, insurance, and investments in one simple view.
+              Goals and investments in one simple view.
             </Typography>
           </Box>
           <Stack direction="row" flexWrap="wrap" spacing={1} useFlexGap>
@@ -281,12 +262,6 @@ export function ClientOverviewPanel({
               variant="outlined"
             >
               Add Investment
-            </Button>
-            <Button
-              onClick={() => setInsuranceDialogOpen(true)}
-              variant="contained"
-            >
-              Add policy
             </Button>
           </Stack>
         </Box>
@@ -482,24 +457,6 @@ export function ClientOverviewPanel({
           );
         }}
         open={goalDialogOpen}
-      />
-      <AddInsuranceDialog
-        clientId={overview.id}
-        getAccessToken={getAccessToken}
-        onClose={() => setInsuranceDialogOpen(false)}
-        onCreated={(product) => {
-          setOverview((current) =>
-            current
-              ? {
-                  ...current,
-                  products: [...current.products, product].sort(
-                    (first, second) => first.name.localeCompare(second.name),
-                  ),
-                }
-              : current,
-          );
-        }}
-        open={insuranceDialogOpen}
       />
       <AddInvestmentDialog
         clientId={overview.id}
