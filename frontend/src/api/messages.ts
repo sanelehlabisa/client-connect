@@ -1,4 +1,4 @@
-const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+import { apiUrl } from "../config";
 
 export type ChatMessage = {
   id: string;

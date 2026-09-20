@@ -20,11 +20,11 @@
 
 ## 2. P0 - Same-network demo access
 
-- [ ] Create the ignored local `.env` from `.env.example` using the host machine's LAN IP.
-- [ ] Configure the public frontend, backend API, and Keycloak URLs from that LAN IP.
-- [ ] Make Vite, FastAPI, and Keycloak reachable from another device on the same network.
-- [ ] Allow the LAN frontend origin in backend CORS and Keycloak redirect/web origins.
-- [ ] Keep PostgreSQL and container-to-container URLs on the private Docker network.
+- [x] Create the ignored local `.env` from `.env.example` using the host machine's LAN IP.
+- [x] Configure the public frontend, backend API, and Keycloak URLs from that LAN IP.
+- [x] Make Vite, FastAPI, and Keycloak reachable from another device on the same network.
+- [x] Allow the LAN frontend origin in backend CORS and Keycloak redirect/web origins.
+- [x] Keep PostgreSQL and container-to-container URLs on the private Docker network.
 - [ ] Document the shareable URL and verify login plus API access from a second device.
 
 ## 3. P0 - Seeded provider marketplace

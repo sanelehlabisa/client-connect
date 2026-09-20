@@ -66,14 +66,14 @@
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": false,
       "redirectUris": [
-        "http://localhost:5173/*"
+        "${CLIENTCONNECT_FRONTEND_URL}/*"
       ],
       "webOrigins": [
-        "http://localhost:5173"
+        "${CLIENTCONNECT_FRONTEND_URL}"
       ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "http://localhost:5173/*"
+        "post.logout.redirect.uris": "${CLIENTCONNECT_FRONTEND_URL}/*"
       },
       "protocolMappers": [
         {

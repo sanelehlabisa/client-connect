@@ -12,8 +12,8 @@ class Settings(BaseSettings):
     database_url: str = (
         "postgresql+psycopg://rsf:rsf_dev_password@database:5432/rsf"
     )
-    frontend_url: str = "http://localhost:5173"
-    keycloak_url: str = "http://localhost:8080"
+    frontend_url: str
+    keycloak_url: str
     keycloak_internal_url: str = "http://keycloak:8080"
     keycloak_realm: str = "rsf-clientconnect"
     keycloak_audience: str = "rsf-api"

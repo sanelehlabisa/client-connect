@@ -38,7 +38,8 @@ dev.docker-compose.yaml      Local development environment
 
 ## Start development
 
-1. Copy the example environment file:
+1. Copy the example environment file, then set `APP_HOST` in `.env` to this
+   computer's Wi-Fi or Ethernet IPv4 address (for example, `192.168.1.100`):
 
    ~~~powershell
    Copy-Item .env.example .env
@@ -50,13 +51,21 @@ dev.docker-compose.yaml      Local development environment
    docker compose -f dev.docker-compose.yaml up --build
    ~~~
 
-3. Open:
+3. Open these URLs, replacing `<APP_HOST>` with the value from `.env`:
 
-   - Frontend: http://localhost:5173
-   - Backend health: http://localhost:8000/health
-   - FastAPI docs: http://localhost:8000/docs
-   - Keycloak: http://localhost:8080
-   - MailHog: http://localhost:8025
+   - Frontend: `http://<APP_HOST>:5173`
+   - Backend health: `http://<APP_HOST>:8000/health`
+   - FastAPI docs: `http://<APP_HOST>:8000/docs`
+   - Keycloak: `http://<APP_HOST>:8080`
+
+The frontend, API, and Keycloak are available to devices on the same network.
+If another device cannot connect, allow ports `5173`, `8000`, and `8080` on the
+host's private-network firewall. PostgreSQL remains bound to the host only.
+
+Keycloak imports the LAN URLs only when it creates the realm. If an older
+development volume already exists, recreate the development volumes before
+testing this change; doing so deletes existing development data and restores
+the deterministic seed.
 
 Source directories are mounted into the containers, so Vite and Uvicorn reload
 application changes automatically.
