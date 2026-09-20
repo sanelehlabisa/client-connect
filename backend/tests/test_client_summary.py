@@ -83,7 +83,7 @@ class ClientSummaryTests(unittest.TestCase):
                     client_id="client-1",
                     name="Active Client",
                     latest_activity_at=occurred_at,
-                    latest_activity_preview="Message from Client — Please call me.",
+                    latest_activity_preview="Message from Client - Please call me.",
                     unread_message_count=2,
                 ),
                 summary_row(

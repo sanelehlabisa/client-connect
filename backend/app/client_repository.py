@@ -194,7 +194,7 @@ def list_assigned_clients(
                 SELECT
                     activities.occurred_at,
                     LEFT(
-                        activities.title || ' — ' || activities.body,
+                        activities.title || ' - ' || activities.body,
                         160
                     ) AS preview
                 FROM activities
