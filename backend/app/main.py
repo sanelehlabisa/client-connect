@@ -10,7 +10,14 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from app.auth import AuthenticatedUser, get_current_user, require_role
+from app.auth import (
+    AuthenticatedUser,
+    DemoLoginRequest,
+    DemoLoginResponse,
+    get_current_user,
+    login_with_demo_user,
+    require_role,
+)
 from app.database import database_is_ready
 from app.reminder_delivery import run_due_reminder_delivery
 from app.routers.clients import router as clients_router
@@ -106,6 +113,13 @@ def read_current_user(
     """Return the current identity after validating its bearer token."""
 
     return user
+
+
+@app.post("/auth/login", response_model=DemoLoginResponse)
+def login(credentials: DemoLoginRequest) -> DemoLoginResponse:
+    """Log in with one of the development-only JSON accounts."""
+
+    return login_with_demo_user(credentials)
 
 
 @app.get("/auth/adviser-check", response_model=AuthenticatedUser)

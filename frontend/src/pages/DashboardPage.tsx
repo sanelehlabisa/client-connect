@@ -14,7 +14,7 @@ import { AppHeader } from "../components/AppHeader";
 import { ClientOverviewPanel } from "../components/ClientOverviewPanel";
 import { InsuranceReviewQueue } from "../components/InsuranceReviewQueue";
 
-/** Show the correct dashboard shell for the authenticated Keycloak role. */
+/** Show the correct dashboard shell for the authenticated demo role. */
 export function DashboardPage() {
   const auth = useAuth();
   const isAdviser = auth.roles.includes("adviser");

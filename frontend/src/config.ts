@@ -11,8 +11,3 @@ export const apiUrl = requireEnvironmentValue(
   "VITE_API_URL",
   import.meta.env.VITE_API_URL,
 );
-
-export const keycloakUrl = requireEnvironmentValue(
-  "VITE_KEYCLOAK_URL",
-  import.meta.env.VITE_KEYCLOAK_URL,
-);

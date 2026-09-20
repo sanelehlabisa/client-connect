@@ -1,6 +1,6 @@
 import { Box, CircularProgress, Typography } from "@mui/material";
 
-/** Show a consistent full-page loading state while Keycloak initializes. */
+/** Show a consistent full-page loading state while authentication initializes. */
 export function LoadingPage() {
   return (
     <Box

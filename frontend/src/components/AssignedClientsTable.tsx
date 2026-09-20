@@ -107,8 +107,8 @@ function AddClientDialog({
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
             <Typography color="text.secondary">
-              Create the profile first. The Client must register in Keycloak
-              using the same email address.
+              Demo login users are maintained in the backend demo-user file
+              and must use the same email address.
             </Typography>
             {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
             <TextField

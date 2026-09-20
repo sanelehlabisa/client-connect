@@ -47,6 +47,12 @@ role-specific actions instead of separate Client and Adviser workflow pages.
 Only `Client` and `Adviser` are authenticated application roles for the PoC.
 Do not create authentication, registration, or dashboards for other providers.
 
+For the hackathon, authentication uses two seeded records in a backend JSON
+file. The login form accepts email and password, and FastAPI issues a signed,
+short-lived development bearer token containing the identity and role. Keep
+self-registration disabled. Treat this as demo infrastructure only; production
+identity management is deferred.
+
 Seed provider records for:
 
 - Financial Adviser
@@ -81,28 +87,29 @@ recommendation algorithms for this hackathon.
 
 ## Implementation boundaries
 
-- Keep React, TypeScript, Material UI, FastAPI, PostgreSQL, Keycloak, and Docker
-  Compose.
+- Keep React, TypeScript, Material UI, FastAPI, PostgreSQL, and Docker Compose.
 - Reuse the existing chat and shared Client components.
 - Keep the Client interface simple, white, and blue.
 - Present Investment Goal and Insurance as the two Client product-creation
   choices. Keep current database identifiers stable until the JSON-driven
   product-model migration ticket is implemented.
 - Use additive SQL migrations and deterministic seed data.
-- Keep Keycloak as the source of truth for roles.
+- Keep the seeded demo-user JSON as the PoC source of truth for `client` and
+  `adviser` roles, and validate backend-signed tokens on every protected route.
 - Enforce Client ownership and Adviser assignment in backend queries.
 - Add type hints, concise docstrings, explicit names, and junior-friendly code.
 - Run the frontend build, backend checks, and focused role-boundary tests before
   completing a ticket.
-- Use `client-connect` naming for Docker, Keycloak, database, and application
-  identifiers as well as user-facing branding.
+- Use `client-connect` naming for Docker, database, and application identifiers
+  as well as user-facing branding.
 
 ## Deferred work
 
 Do not implement provider self-registration, provider dashboards, Financial
 Institution product management, real provider APIs, payments, transaction-fee
 collection, AI matching, advanced recommendation logic, multiple tenancy, real
-scheduling, or production claim integrations during the hackathon.
+scheduling, production identity management, or production claim integrations
+during the hackathon.
 
 ## Source of truth
 

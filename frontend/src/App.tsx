@@ -34,7 +34,7 @@ function LegacyClientRedirect() {
   );
 }
 
-/** Require a valid Keycloak session before rendering a private page. */
+/** Require a valid demo session before rendering a private page. */
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const auth = useAuth();
 

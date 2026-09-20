@@ -1,0 +1,20 @@
+[
+  {
+    "subject": "demo-client-sanele",
+    "username": "Sanele Hlabisa",
+    "email": "hlabisasanele730@gmail.com",
+    "password": "Password123!",
+    "roles": [
+      "client"
+    ]
+  },
+  {
+    "subject": "demo-adviser-wilson",
+    "username": "Wilson Masuku",
+    "email": "lozaicmasuku@gmail.com",
+    "password": "Password123!",
+    "roles": [
+      "adviser"
+    ]
+  }
+]

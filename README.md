@@ -4,11 +4,6 @@ ClientConnect is a hackathon proof of concept that connects individual Clients
 with financial-service providers and keeps the resulting work in one shared
 workflow.
 
-The current application includes financial dashboards, product tracking,
-Client-Adviser chat, notifications, claims, reminders, and service requests.
-The refocused demo adds a seeded provider marketplace whose first priority is
-matching a Client with a Financial Adviser and continuing in the existing chat.
-
 The priority demo lets a Client create an Investment Goal and submit a claim
 against owned Insurance. The Client and Adviser then complete the claim from a
 shared Product view: chat/activity, Assessor selection, appointment, report,
@@ -23,7 +18,7 @@ See [AGENTS.md](AGENTS.md) for the product and engineering guardrails and
 - React, TypeScript, Vite, and Material UI
 - Python, FastAPI, SQLAlchemy, and Psycopg
 - PostgreSQL
-- Keycloak with OpenID Connect and PKCE
+- JSON-backed demo users with backend-signed development tokens
 - MailHog development email
 - Docker Compose local runtime
 
@@ -33,10 +28,9 @@ hints and docstrings, and the code favors explicit, junior-friendly modules.
 ## Project structure
 
 ~~~text
-backend/                     FastAPI application
+backend/                     FastAPI application and demo authentication
 database/init/               PostgreSQL schema, migrations, and demo seed
 frontend/src/                React application
-keycloak/realm/              Importable development realm
 AGENTS.md                    Product and implementation guardrails
 TASKS.md                     Ordered hackathon backlog
 dev.docker-compose.yaml      Local development environment
@@ -51,60 +45,55 @@ dev.docker-compose.yaml      Local development environment
    Copy-Item .env.example .env
    ~~~
 
-2. Build and start the services:
+2. Replace `DEMO_AUTH_SECRET` with a long random value. This secret signs local
+   demo tokens and must not be used for a production deployment.
+
+3. Build and start the services:
 
    ~~~powershell
    docker compose -f dev.docker-compose.yaml up --build
    ~~~
 
-3. Open these URLs, replacing `<APP_HOST>` with the value from `.env`:
+4. Open these URLs, replacing `<APP_HOST>` with the value from `.env`:
 
    - Frontend: `http://<APP_HOST>:5173`
    - Backend health: `http://<APP_HOST>:8000/health`
    - FastAPI docs: `http://<APP_HOST>:8000/docs`
-   - Keycloak: `http://<APP_HOST>:8080`
+   - MailHog: `http://<APP_HOST>:8025`
 
-The frontend, API, and Keycloak are available to devices on the same network.
-If another device cannot connect, allow ports `5173`, `8000`, and `8080` on the
-host's private-network firewall. PostgreSQL remains bound to the host only.
-
-The HTTP LAN demo disables PKCE only when the browser reports an insecure
-context because Web Crypto is unavailable there. Keep this setup on a trusted
-development network; a production deployment must use HTTPS and S256 PKCE.
-
-Keycloak imports the LAN URLs only when it creates the realm. If an older
-development volume already exists, recreate the development volumes before
-testing this change; doing so deletes existing development data and restores
-the deterministic seed.
+The frontend and API are available to devices on the same network. If another
+device cannot connect, allow ports `5173` and `8000` on the host's private-network
+firewall. Allow `8025` as well only when another device must view MailHog.
+PostgreSQL remains bound to the host loopback interface and private Docker
+network.
 
 Source directories are mounted into the containers, so Vite and Uvicorn reload
 application changes automatically.
 
-## Development accounts
+## Development login
 
-| Account | Username | Password | Access |
+| Account | Email | Password | Access |
 | --- | --- | --- | --- |
-| Client | `hlabisasanele730` | `Password123!` | `client` role |
-| Adviser | `lozaicmasuku` | `Password123!` | Seeded Royal Square Adviser |
-| Keycloak administrator | `admin` | `admin` | Development only |
+| Client | `hlabisasanele730@gmail.com` | `Password123!` | Own Client data |
+| Adviser | `lozaicmasuku@gmail.com` | `Password123!` | Assigned Clients |
 
-Self-registration grants the `client` role. Adviser access remains controlled
-through the Keycloak `advisers` group. These credentials and the imported realm
-are development data only.
+The login form sends the email and password to the API. The API validates the
+seeded JSON user and returns a signed, short-lived development bearer token that
+contains the user's identity and `client` or `adviser` role. There is no
+self-registration in the hackathon demo.
 
-The application database matches these accounts by email. If the development
-volumes were created before these users changed, recreate the PostgreSQL and
-Keycloak volumes so the updated seed and realm import are applied together.
+This authentication is deliberately limited to the PoC. The seeded passwords,
+JSON user store, HTTP transport, and token secret are not production security.
 
 ## Naming
 
-Docker, PostgreSQL, Keycloak, and application identifiers use the
-`client-connect` name consistently.
+Docker, PostgreSQL, and application identifiers use the `client-connect` name
+consistently.
 
 ## Common commands
 
 ~~~powershell
 docker compose -f dev.docker-compose.yaml up --build
-docker compose -f dev.docker-compose.yaml logs --follow frontend backend keycloak
+docker compose -f dev.docker-compose.yaml logs --follow frontend backend
 docker compose -f dev.docker-compose.yaml down
 ~~~

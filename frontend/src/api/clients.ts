@@ -92,7 +92,7 @@ export async function getClientOverview(
   return (await response.json()) as ClientOverview;
 }
 
-/** Load the Client profile linked to the current Keycloak identity. */
+/** Load the Client profile linked to the current demo identity. */
 export async function getOwnClientOverview(
   accessToken: string,
   signal?: AbortSignal,

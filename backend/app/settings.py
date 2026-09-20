@@ -14,29 +14,14 @@ class Settings(BaseSettings):
         "@database:5432/client_connect"
     )
     frontend_url: str
-    keycloak_url: str
-    keycloak_internal_url: str = "http://keycloak:8080"
-    keycloak_realm: str = "client-connect"
-    keycloak_audience: str = "client-connect-api"
+    demo_auth_secret: str = "client-connect-development-only-signing-secret"
+    demo_auth_token_minutes: int = 480
+    demo_auth_issuer: str = "client-connect-demo-auth"
+    demo_auth_audience: str = "client-connect-api"
     smtp_host: str = "mailhog"
     smtp_port: int = 1025
     mail_from: str = "notifications@client-connect.local"
     reminder_check_interval_seconds: int = 60
-
-    @property
-    def keycloak_issuer(self) -> str:
-        """Return the public issuer expected in Keycloak access tokens."""
-
-        return f"{self.keycloak_url}/realms/{self.keycloak_realm}"
-
-    @property
-    def keycloak_jwks_url(self) -> str:
-        """Return the internal URL used to download Keycloak signing keys."""
-
-        return (
-            f"{self.keycloak_internal_url}/realms/{self.keycloak_realm}"
-            "/protocol/openid-connect/certs"
-        )
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

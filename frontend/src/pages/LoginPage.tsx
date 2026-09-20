@@ -5,16 +5,28 @@ import {
   Container,
   Paper,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
+import { type FormEvent, useState } from "react";
 import { Navigate } from "react-router-dom";
 
 import { useAuth } from "../auth/AuthContext";
 import { LoadingPage } from "./LoadingPage";
 
-/** Let a Client or Adviser continue to the secure Keycloak login screen. */
+/** Let a Client or Adviser sign in to the demo application. */
 export function LoginPage() {
   const auth = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault();
+    setIsSubmitting(true);
+    await auth.login(email.trim(), password);
+    setIsSubmitting(false);
+  }
 
   if (!auth.initialized) {
     return <LoadingPage />;
@@ -41,39 +53,44 @@ export function LoginPage() {
             </Typography>
           </Box>
 
-          <Paper variant="outlined" sx={{ p: { xs: 3, sm: 4 } }}>
+          <Paper
+            component="form"
+            onSubmit={(event) => void handleSubmit(event)}
+            variant="outlined"
+            sx={{ p: { xs: 3, sm: 4 } }}
+          >
             <Stack spacing={2.5}>
               <Typography component="h2" fontWeight={700} variant="h6">
-                Continue to ClientConnect
+                Log in to ClientConnect
               </Typography>
 
-              {auth.error && (
-                <Alert severity="warning">
-                  Keycloak is unavailable. Check that the development services
-                  are running, then refresh this page.
-                </Alert>
-              )}
+              {auth.error && <Alert severity="error">{auth.error}</Alert>}
 
+              <TextField
+                autoComplete="email"
+                autoFocus
+                label="Email address"
+                onChange={(event) => setEmail(event.target.value)}
+                required
+                type="email"
+                value={email}
+              />
+              <TextField
+                autoComplete="current-password"
+                label="Password"
+                onChange={(event) => setPassword(event.target.value)}
+                required
+                type="password"
+                value={password}
+              />
               <Button
-                disabled={auth.error}
-                onClick={() => void auth.login()}
+                disabled={isSubmitting}
                 size="large"
+                type="submit"
                 variant="contained"
               >
-                Log in
+                {isSubmitting ? "Logging in..." : "Log in"}
               </Button>
-              <Button
-                disabled={auth.error}
-                onClick={() => void auth.register()}
-                size="large"
-                variant="outlined"
-              >
-                Create client account
-              </Button>
-              <Typography color="text.secondary" variant="body2">
-                Adviser access is assigned by Royal Square. New registrations
-                receive Client access only.
-              </Typography>
             </Stack>
           </Paper>
         </Stack>

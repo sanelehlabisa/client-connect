@@ -1,4 +1,4 @@
--- Keep application identities aligned with the Keycloak development realm.
+-- Keep application identities aligned with the development demo users.
 
 UPDATE users
 SET

@@ -10,8 +10,11 @@
 
 ## 1. Existing foundation - keep working
 
-- [x] Client and Adviser authentication with Keycloak roles.
-- [x] Keep the seeded Keycloak and application Client/Adviser identities aligned.
+- [x] Use seeded JSON Client/Adviser users, email/password login, and
+  backend-signed development tokens.
+- [x] Keep the seeded demo-auth and application Client/Adviser identities aligned.
+- [x] Remove self-registration and the obsolete identity runtime, database,
+  realm, and browser configuration from the hackathon stack.
 - [x] Shared financial dashboard with Goals, Insurance, and Investments.
 - [x] Assigned-Client management and protected Adviser access.
 - [x] Client-Adviser chat, notifications, and development email.
@@ -37,10 +40,10 @@
 ## 3. P0 - Same-network demo access
 
 - [x] Create the ignored local `.env` from `.env.example` using the host machine's LAN IP.
-- [x] Configure the public frontend, backend API, and Keycloak URLs from that LAN IP.
-- [x] Make Vite, FastAPI, and Keycloak reachable from another device on the same network.
-- [x] Allow the LAN frontend origin in backend CORS and Keycloak redirect/web origins.
-- [x] Support the Keycloak browser login from the trusted HTTP LAN demo origin.
+- [x] Configure the public frontend and backend API URLs from that LAN IP.
+- [x] Make Vite and FastAPI listen for devices on the same network.
+- [x] Allow the LAN frontend origin in backend CORS.
+- [x] Support the JSON demo login from the trusted HTTP LAN demo origin.
 - [x] Keep PostgreSQL and container-to-container URLs on the private Docker network.
 - [ ] Document the shareable URL and verify login plus API access from a second device.
 
