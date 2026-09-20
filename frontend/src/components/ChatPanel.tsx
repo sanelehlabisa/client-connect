@@ -11,6 +11,10 @@ import {
 } from "@mui/material";
 
 import { getMessages, sendMessage, type ChatMessage } from "../api/messages";
+import {
+  getNotifications,
+  type NotificationItem,
+} from "../api/notifications";
 import { getReminders, type Reminder } from "../api/reminders";
 import { useAuth } from "../auth/AuthContext";
 
@@ -35,7 +39,9 @@ const reminderDate = new Intl.DateTimeFormat("en-ZA", {
 /** Provide the persistent text channel for a Client and assigned Adviser. */
 export function ChatPanel({ clientId, getAccessToken }: ChatPanelProps) {
   const auth = useAuth();
+  const isClient = auth.roles.includes("client");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(true);
@@ -57,11 +63,27 @@ export function ChatPanel({ clientId, getAccessToken }: ChatPanelProps) {
           throw new Error("A valid access token is required.");
         }
 
-        const [conversation, availableReminders] = await Promise.all([
-          getMessages(accessToken, clientId, controller.signal),
-          getReminders(accessToken, controller.signal),
-        ]);
+        const [conversation, availableNotifications, availableReminders] =
+          await Promise.all([
+            getMessages(accessToken, clientId, controller.signal),
+            getNotifications(accessToken, controller.signal),
+            getReminders(accessToken, controller.signal),
+          ]);
         setMessages(conversation);
+        setNotifications(
+          availableNotifications.filter((notification) => {
+            const isMessageNotification = notification.title
+              .toLowerCase()
+              .startsWith("new message from");
+            if (isMessageNotification) {
+              return false;
+            }
+            return isClient
+              ? notification.client_id === null ||
+                  notification.client_id === clientId
+              : notification.client_id === clientId;
+          }),
+        );
         setReminders(
           availableReminders.filter(
             (reminder) =>
@@ -93,11 +115,11 @@ export function ChatPanel({ clientId, getAccessToken }: ChatPanelProps) {
       controller.abort();
       window.clearInterval(pollingId);
     };
-  }, [clientId, getAccessToken]);
+  }, [clientId, getAccessToken, isClient]);
 
   useEffect(() => {
     endOfMessages.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
+  }, [messages.length, notifications.length, reminders.length]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -166,7 +188,9 @@ export function ChatPanel({ clientId, getAccessToken }: ChatPanelProps) {
             <Stack alignItems="center" justifyContent="center" minHeight={140}>
               <CircularProgress size={30} />
             </Stack>
-          ) : messages.length === 0 && reminders.length === 0 ? (
+          ) : messages.length === 0 &&
+            notifications.length === 0 &&
+            reminders.length === 0 ? (
             <Stack alignItems="center" justifyContent="center" minHeight={140}>
               <Typography color="text.secondary">
                 No messages yet. Start the conversation below.
@@ -198,6 +222,35 @@ export function ChatPanel({ clientId, getAccessToken }: ChatPanelProps) {
                     {reminderDate.format(
                       new Date(`${reminder.due_date}T00:00:00`),
                     )}
+                  </Typography>
+                </Box>
+              ))}
+              {notifications.map((notification) => (
+                <Box
+                  key={`notification-${notification.id}`}
+                  sx={{
+                    alignSelf: "center",
+                    bgcolor: "#eef6ff",
+                    border: "1px solid",
+                    borderColor: "primary.light",
+                    borderRadius: 2,
+                    maxWidth: "90%",
+                    px: 2,
+                    py: 1,
+                    textAlign: "center",
+                  }}
+                >
+                  <Typography fontWeight={700} variant="caption">
+                    {notification.title}
+                  </Typography>
+                  <Typography variant="body2">
+                    {notification.message}
+                  </Typography>
+                  <Typography color="text.secondary" variant="caption">
+                    {notification.product_name
+                      ? `${notification.product_name} - `
+                      : ""}
+                    {messageTime.format(new Date(notification.created_at))}
                   </Typography>
                 </Box>
               ))}

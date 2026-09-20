@@ -25,7 +25,7 @@ export function ClientPage() {
         }
         backTo={auth.roles.includes("adviser") ? "/dashboard" : undefined}
       />
-      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2.5, md: 4 } }}>
         <ClientOverviewPanel
           clientId={clientId}
           getAccessToken={auth.getAccessToken}

@@ -6,7 +6,6 @@ import { ClientPage } from "./pages/ClientPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoadingPage } from "./pages/LoadingPage";
 import { LoginPage } from "./pages/LoginPage";
-import { NotificationsPage } from "./pages/NotificationsPage";
 
 /** Send the root URL to the correct first screen. */
 function HomeRedirect() {
@@ -56,14 +55,6 @@ export default function App() {
     <Routes>
       <Route element={<HomeRedirect />} path="/" />
       <Route element={<LoginPage />} path="/login" />
-      <Route
-        element={
-          <ProtectedRoute>
-            <NotificationsPage />
-          </ProtectedRoute>
-        }
-        path="/notifications"
-      />
       <Route
         element={
           <ProtectedRoute>

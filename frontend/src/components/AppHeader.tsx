@@ -20,7 +20,7 @@ type AppHeaderProps = {
 function LogoutIcon() {
   return (
     <SvgIcon fontSize="small" viewBox="0 0 24 24">
-      <path d="M10 17v-2h4V9h-4V7l5 5-5 5Zm-6 4V3h9v2H6v14h7v2H4Z" />
+      <path d="M17 7 15.59 8.41 18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5-5-5ZM4 5h8V3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8v-2H4V5Z" />
     </SvgIcon>
   );
 }
@@ -74,9 +74,6 @@ export function AppHeader({ backLabel, backTo }: AppHeaderProps) {
             ClientConnect
           </Typography>
         </Stack>
-        <Button component={Link} to="/notifications">
-          Notifications
-        </Button>
         <Stack alignItems="flex-end" spacing={0}>
           <Typography
             fontWeight={700}

@@ -5,6 +5,7 @@ import {
   Button,
   Chip,
   CircularProgress,
+  Fab,
   Paper,
   Stack,
   Table,
@@ -187,19 +188,26 @@ export function ClientOverviewPanel({
   }
 
   return (
-    <Stack spacing={4}>
+    <Stack spacing={2.5}>
       {!isAdviser && (
-        <Box display="flex" justifyContent="center">
-          <Button
-            onClick={() =>
-              chatSection.current?.scrollIntoView({ behavior: "smooth" })
-            }
-            size="small"
-            variant="outlined"
-          >
-            Need Financial Advice?
-          </Button>
-        </Box>
+        <Fab
+          color="primary"
+          onClick={() =>
+            chatSection.current?.scrollIntoView({ behavior: "smooth" })
+          }
+          size="medium"
+          sx={{
+            bottom: { xs: 16, sm: 24 },
+            fontWeight: 800,
+            position: "fixed",
+            right: { xs: 16, sm: 24 },
+            textTransform: "none",
+            zIndex: 10,
+          }}
+          variant="extended"
+        >
+          Need Financial Advice?
+        </Fab>
       )}
 
       <Paper
@@ -241,7 +249,7 @@ export function ClientOverviewPanel({
             flexDirection: { xs: "column", sm: "row" },
             gap: 2,
             justifyContent: "space-between",
-            p: 3,
+            p: 2,
             pb: 1,
           }}
         >
@@ -315,7 +323,7 @@ export function ClientOverviewPanel({
       </TableContainer>
       {overview.archived_products.length > 0 && (
         <TableContainer component={Paper} variant="outlined">
-          <Box sx={{ p: 3, pb: 1 }}>
+          <Box sx={{ p: 2, pb: 1 }}>
             <Typography component="h2" fontWeight={700} variant="h6">
               Product history
             </Typography>

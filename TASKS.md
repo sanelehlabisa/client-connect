@@ -58,6 +58,7 @@
 - [x] Send `Get Financial Advice` directly to the Adviser conversation.
 - [x] Limit new Client product actions to Goals and Investments.
 - [x] Show active automatic reminders inside the conversation instead of a separate table.
+- [x] Show notification activity inside chat and remove the separate Notifications page.
 - [ ] Link messages and activity to a Product so Product-by-ID can show a filtered interaction timeline.
 
 ## 7. P1 - Automatic Adviser task recommendations
