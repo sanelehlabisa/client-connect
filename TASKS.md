@@ -39,7 +39,7 @@
 - [x] Show name, services, rating, location, and availability for each recommendation.
 - [x] Let the Client select the seeded Royal Square Adviser.
 - [x] Link the selection to the Client and open the existing conversation.
-- [ ] Verify the Client message, Adviser reply, and Client notification demo end to end.
+- [x] Verify the Client message, Adviser reply, and Client notification demo end to end.
 
 ## 5. P1 - Product removal
 
@@ -73,13 +73,13 @@ Start only after the Adviser matching demo is complete.
 
 ## 9. Demo acceptance
 
-- [ ] Client logs in and sees their financial dashboard.
-- [ ] Client selects `Get Financial Advice` and receives two recommendations.
-- [ ] Results include the seeded Royal Square Adviser.
-- [ ] Client selects the Adviser and sends a message in the existing chat.
-- [ ] Adviser logs in, sees the Client and message, and replies.
-- [ ] Client receives a notification and sees the response.
-- [ ] Fix demo blockers and stop before deferred work.
+- [x] Client logs in and sees their financial dashboard.
+- [x] Client selects `Get Financial Advice` and receives two recommendations.
+- [x] Results include the seeded Royal Square Adviser.
+- [x] Client selects the Adviser and sends a message in the existing chat.
+- [x] Adviser logs in, sees the Client and message, and replies.
+- [x] Client receives a notification and sees the response.
+- [x] Fix demo blockers and stop before deferred work.
 
 ## Deferred
 
