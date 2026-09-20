@@ -245,17 +245,17 @@ def select_chat_adviser(
                 is_read
             )
             SELECT
-                :notification_id,
-                :adviser_user_id,
+                CAST(:notification_id AS VARCHAR(40)),
+                CAST(:adviser_user_id AS VARCHAR(40)),
                 'New financial advice request',
-                :message,
+                CAST(:message AS TEXT),
                 FALSE
             WHERE NOT EXISTS (
                 SELECT 1
                 FROM notifications
-                WHERE user_id = :adviser_user_id
+                WHERE user_id = CAST(:adviser_user_id AS VARCHAR(40))
                   AND title = 'New financial advice request'
-                  AND message = :message
+                  AND message = CAST(:message AS TEXT)
             )
             """
         ),
