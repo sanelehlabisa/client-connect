@@ -20,7 +20,7 @@
 
 ## 2. P0 - Primary demo: Goal and Insurance claim
 
-- [ ] Verify a Client can create an Investment Goal and open its Product-by-ID view.
+- [x] Verify a Client can create an Investment Goal and open its Product-by-ID view.
 - [ ] Let a Client submit a claim form only for Insurance they own.
 - [ ] Use one shared Product-by-ID view for the Client and assigned Adviser.
 - [ ] Link messages and system activity to the Product and show one chronological chat timeline.

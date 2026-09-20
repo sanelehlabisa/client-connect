@@ -448,6 +448,7 @@ export function ClientOverviewPanel({
                 }
               : current,
           );
+          navigate(`/clients/${overview.id}/products/${goal.id}`);
         }}
         open={goalDialogOpen}
       />

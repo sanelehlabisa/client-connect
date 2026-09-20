@@ -121,7 +121,11 @@ export function ProductDetailsDialog({
           <Chip
             color="primary"
             label={
-              isGoal ? "Goal" : isInvestment ? "Investment" : "Insurance"
+              isGoal
+                ? "Investment Goal"
+                : isInvestment
+                  ? "Investment"
+                  : "Insurance"
             }
             size="small"
             variant="outlined"
