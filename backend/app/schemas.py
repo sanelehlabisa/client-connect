@@ -31,6 +31,7 @@ ServiceRequestType = Literal[
     "Investment IRP5",
     "Consultation",
 ]
+ServiceRequestStatus = Literal["Submitted", "In Progress", "Completed"]
 
 
 class FinancialPosition(BaseModel):
@@ -278,8 +279,15 @@ class ServiceRequest(BaseModel):
     client_name: str
     request_type: ServiceRequestType
     details: str
-    status: Literal["Submitted"]
+    status: ServiceRequestStatus
     created_at: datetime
+    updated_at: datetime
+
+
+class ServiceRequestStatusUpdate(BaseModel):
+    """The next service-request status selected by an Adviser."""
+
+    status: Literal["In Progress", "Completed"]
 
 
 class InsuranceRequestCreate(BaseModel):

@@ -110,6 +110,7 @@ For this PoC, use seeded products. Product creation is deferred.
 ## Client service requests
 
 - [x] Let Clients request a policy document, border letter, IRP5, or consultation and notify their Adviser.
+- [x] Let Advisers progress service requests and notify the Client.
 
 ## Deferred
 

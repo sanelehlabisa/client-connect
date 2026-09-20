@@ -7,10 +7,16 @@ from sqlalchemy.orm import Session
 
 from app.auth import AuthenticatedUser, get_current_user, require_email, require_role
 from app.database import get_database_session
-from app.schemas import ServiceRequest, ServiceRequestCreate
+from app.schemas import (
+    ServiceRequest,
+    ServiceRequestCreate,
+    ServiceRequestStatusUpdate,
+)
 from app.service_request_repository import (
+    InvalidServiceRequestTransitionError,
     create_service_request,
     list_service_requests,
+    update_service_request_status,
 )
 
 router = APIRouter(prefix="/clients", tags=["service requests"])
@@ -79,3 +85,38 @@ def get_service_requests(
             detail="Client not found.",
         )
     return requests
+
+
+@router.patch(
+    "/{client_id}/service-requests/{request_id}",
+    response_model=ServiceRequest,
+)
+def change_service_request_status(
+    client_id: str,
+    request_id: str,
+    update: ServiceRequestStatusUpdate,
+    adviser: Annotated[AuthenticatedUser, Depends(require_role("adviser"))],
+    session: Annotated[Session, Depends(get_database_session)],
+) -> ServiceRequest:
+    """Move an assigned Client request through its status workflow."""
+
+    try:
+        request = update_service_request_status(
+            session=session,
+            client_id=client_id,
+            request_id=request_id,
+            adviser_email=require_email(adviser),
+            requested_status=update.status,
+        )
+    except InvalidServiceRequestTransitionError as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error),
+        ) from error
+
+    if request is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Service request not found.",
+        )
+    return request

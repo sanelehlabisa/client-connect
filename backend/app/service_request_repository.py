@@ -5,7 +5,23 @@ from uuid import uuid4
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.schemas import ServiceRequest, ServiceRequestType
+from app.schemas import ServiceRequest, ServiceRequestStatus, ServiceRequestType
+
+STATUS_TRANSITIONS: dict[str, str] = {
+    "Submitted": "In Progress",
+    "In Progress": "Completed",
+}
+
+
+class InvalidServiceRequestTransitionError(Exception):
+    """Raised when an Adviser attempts an out-of-order status change."""
+
+    def __init__(self, current_status: str, requested_status: str) -> None:
+        """Describe the invalid transition in the API response."""
+
+        super().__init__(
+            f"Cannot change status from {current_status} to {requested_status}."
+        )
 
 
 def list_service_requests(
@@ -50,7 +66,8 @@ def list_service_requests(
                 service_requests.request_type,
                 service_requests.details,
                 service_requests.status,
-                service_requests.created_at
+                service_requests.created_at,
+                service_requests.updated_at
             FROM service_requests
             JOIN clients ON clients.id = service_requests.client_id
             JOIN users AS client_user ON client_user.id = clients.user_id
@@ -69,6 +86,7 @@ def list_service_requests(
             details=row.details,
             status=row.status,
             created_at=row.created_at,
+            updated_at=row.updated_at,
         )
         for row in rows
     ]
@@ -102,7 +120,7 @@ def create_service_request(
             JOIN users AS client_user ON client_user.id = clients.user_id
             WHERE clients.id = :client_id
               AND client_user.email = :client_email
-            RETURNING id, request_type, details, status, created_at
+            RETURNING id, request_type, details, status, created_at, updated_at
             """
         ),
         {
@@ -164,4 +182,101 @@ def create_service_request(
         details=row.details,
         status=row.status,
         created_at=row.created_at,
+        updated_at=row.updated_at,
+    )
+
+
+def update_service_request_status(
+    session: Session,
+    client_id: str,
+    request_id: str,
+    adviser_email: str,
+    requested_status: ServiceRequestStatus,
+) -> ServiceRequest | None:
+    """Apply the next status to a request assigned to the Adviser."""
+
+    row = session.execute(
+        text(
+            """
+            SELECT
+                service_requests.status,
+                service_requests.request_type,
+                service_requests.details,
+                service_requests.created_at,
+                client_user.name AS client_name
+            FROM service_requests
+            JOIN clients ON clients.id = service_requests.client_id
+            JOIN users AS client_user ON client_user.id = clients.user_id
+            JOIN users AS adviser_user ON adviser_user.id = clients.adviser_id
+            WHERE service_requests.id = :request_id
+              AND clients.id = :client_id
+              AND adviser_user.email = :adviser_email
+            FOR UPDATE OF service_requests
+            """
+        ),
+        {
+            "request_id": request_id,
+            "client_id": client_id,
+            "adviser_email": adviser_email,
+        },
+    ).one_or_none()
+    if row is None:
+        return None
+
+    expected_status = STATUS_TRANSITIONS.get(row.status)
+    if requested_status != expected_status:
+        raise InvalidServiceRequestTransitionError(row.status, requested_status)
+
+    updated_at = session.execute(
+        text(
+            """
+            UPDATE service_requests
+            SET
+                status = :requested_status,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = :request_id
+            RETURNING updated_at
+            """
+        ),
+        {"request_id": request_id, "requested_status": requested_status},
+    ).scalar_one()
+    session.execute(
+        text(
+            """
+            INSERT INTO notifications (
+                id,
+                user_id,
+                title,
+                message,
+                is_read
+            )
+            SELECT
+                :notification_id,
+                clients.user_id,
+                'Service request updated',
+                :message,
+                FALSE
+            FROM clients
+            WHERE clients.id = :client_id
+            """
+        ),
+        {
+            "notification_id": str(uuid4()),
+            "client_id": client_id,
+            "message": (
+                f"Your {row.request_type} request ({row.details}) "
+                f"is now {requested_status}."
+            ),
+        },
+    )
+    session.commit()
+    return ServiceRequest(
+        id=request_id,
+        client_id=client_id,
+        client_name=row.client_name,
+        request_type=row.request_type,
+        details=row.details,
+        status=requested_status,
+        created_at=row.created_at,
+        updated_at=updated_at,
     )

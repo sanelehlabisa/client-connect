@@ -28,7 +28,9 @@ import {
 import {
   createServiceRequest,
   getServiceRequests,
+  updateServiceRequestStatus,
   type ServiceRequest,
+  type ServiceRequestStatus,
   type ServiceRequestType,
 } from "../api/serviceRequests";
 import { useAuth } from "../auth/AuthContext";
@@ -44,6 +46,13 @@ const requestTypes: ServiceRequestType[] = [
   "Investment IRP5",
   "Consultation",
 ];
+
+const nextStatus: Partial<
+  Record<ServiceRequestStatus, Exclude<ServiceRequestStatus, "Submitted">>
+> = {
+  Submitted: "In Progress",
+  "In Progress": "Completed",
+};
 
 const dateTime = new Intl.DateTimeFormat("en-ZA", {
   dateStyle: "medium",
@@ -64,6 +73,7 @@ export function ServiceRequestsPanel({
     useState<ServiceRequestType>("Policy Document");
   const [details, setDetails] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [updatingId, setUpdatingId] = useState<string>();
   const isAdviser = auth.roles.includes("adviser");
 
   useEffect(() => {
@@ -139,6 +149,39 @@ export function ServiceRequestsPanel({
     }
   }
 
+  async function handleStatusUpdate(request: ServiceRequest): Promise<void> {
+    const status = nextStatus[request.status];
+    if (!status) {
+      return;
+    }
+
+    setUpdatingId(request.id);
+    setErrorMessage(null);
+    try {
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        throw new Error("A valid access token is required.");
+      }
+      const updated = await updateServiceRequestStatus(
+        accessToken,
+        clientId,
+        request.id,
+        status,
+      );
+      setRequests((current) =>
+        current.map((item) => (item.id === updated.id ? updated : item)),
+      );
+    } catch (requestError: unknown) {
+      setErrorMessage(
+        requestError instanceof Error
+          ? requestError.message
+          : "The request status could not be updated.",
+      );
+    } finally {
+      setUpdatingId(undefined);
+    }
+  }
+
   if (loading) {
     return (
       <Paper variant="outlined" sx={{ p: 4 }}>
@@ -185,13 +228,15 @@ export function ServiceRequestsPanel({
               <TableCell>Request</TableCell>
               <TableCell>Details</TableCell>
               <TableCell>Submitted</TableCell>
+              <TableCell>Updated</TableCell>
               <TableCell>Status</TableCell>
+              {isAdviser && <TableCell align="right">Next action</TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
             {requests.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4}>
+                <TableCell colSpan={isAdviser ? 6 : 5}>
                   <Typography color="text.secondary" textAlign="center">
                     No service requests have been submitted.
                   </Typography>
@@ -206,8 +251,36 @@ export function ServiceRequestsPanel({
                   {dateTime.format(new Date(request.created_at))}
                 </TableCell>
                 <TableCell>
-                  <Chip label={request.status} size="small" variant="outlined" />
+                  {dateTime.format(new Date(request.updated_at))}
                 </TableCell>
+                <TableCell>
+                  <Chip
+                    color={request.status === "Completed" ? "success" : "default"}
+                    label={request.status}
+                    size="small"
+                    variant="outlined"
+                  />
+                </TableCell>
+                {isAdviser && (
+                  <TableCell align="right">
+                    {nextStatus[request.status] ? (
+                      <Button
+                        disabled={updatingId !== undefined}
+                        onClick={() => void handleStatusUpdate(request)}
+                        size="small"
+                        variant="outlined"
+                      >
+                        {updatingId === request.id
+                          ? "Updating..."
+                          : nextStatus[request.status]}
+                      </Button>
+                    ) : (
+                      <Typography color="text.secondary" variant="body2">
+                        Complete
+                      </Typography>
+                    )}
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>
