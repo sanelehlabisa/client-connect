@@ -163,7 +163,7 @@ export function ChatPanel({ clientId, getAccessToken }: ChatPanelProps) {
             {auth.roles.includes("adviser") ? "client" : "adviser"}
           </Typography>
           <Typography color="text.secondary" variant="body2">
-            Messages are shared only with this Client and assigned Adviser.
+            Messages, reminders, and account activity stay in one conversation.
           </Typography>
         </Box>
 
@@ -174,7 +174,7 @@ export function ChatPanel({ clientId, getAccessToken }: ChatPanelProps) {
         )}
 
         <Box
-          aria-label="Conversation messages"
+          aria-label="Conversation activity"
           sx={{
             bgcolor: "background.default",
             borderRadius: 2,
