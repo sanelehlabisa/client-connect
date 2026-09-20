@@ -40,7 +40,7 @@
   Adviser dashboard; open that work through the relevant Client and Product.
 - [x] Add an additive activity/read model so every event has a Client, optional
   Product, timestamp, intended recipient, and read state.
-- [ ] Add latest activity time, a short activity preview, and unread message
+- [x] Add latest activity time, a short activity preview, and unread message
   count to each assigned-Client summary.
 - [ ] Sort Clients by latest activity first, then by Client name as a stable
   tie-breaker.

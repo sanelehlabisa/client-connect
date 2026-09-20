@@ -226,6 +226,9 @@ class ClientSummary(BaseModel):
     financial_position: FinancialPosition
     product_count: int
     pending_actions: int
+    latest_activity_at: datetime | None
+    latest_activity_preview: str | None
+    unread_message_count: int
 
 
 class ClientCreate(BaseModel):

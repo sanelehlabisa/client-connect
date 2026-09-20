@@ -162,28 +162,60 @@ def list_assigned_clients(
                 financial_positions.liabilities,
                 financial_positions.monthly_income,
                 financial_positions.monthly_expenses,
-                COUNT(DISTINCT products.id) FILTER (
-                    WHERE products.status <> 'Archived'
-                ) AS product_count,
-                COUNT(DISTINCT insurance_requests.id) FILTER (
-                    WHERE insurance_requests.status IN ('Submitted', 'Under Review')
-                ) AS pending_actions
+                COALESCE(product_summary.product_count, 0) AS product_count,
+                COALESCE(claim_summary.pending_actions, 0) AS pending_actions,
+                latest_activity.occurred_at AS latest_activity_at,
+                latest_activity.preview AS latest_activity_preview,
+                COALESCE(activity_summary.unread_message_count, 0)
+                    AS unread_message_count
             FROM clients
             JOIN users AS client_user ON client_user.id = clients.user_id
             JOIN users AS adviser_user ON adviser_user.id = clients.adviser_id
             JOIN financial_positions
                 ON financial_positions.client_id = clients.id
-            LEFT JOIN products ON products.client_id = clients.id
-            LEFT JOIN insurance_requests
-                ON insurance_requests.product_id = products.id
+            LEFT JOIN LATERAL (
+                SELECT COUNT(*)::INTEGER AS product_count
+                FROM products
+                WHERE products.client_id = clients.id
+                  AND products.status <> 'Archived'
+            ) AS product_summary ON TRUE
+            LEFT JOIN LATERAL (
+                SELECT COUNT(*)::INTEGER AS pending_actions
+                FROM insurance_requests
+                JOIN products
+                    ON products.id = insurance_requests.product_id
+                WHERE products.client_id = clients.id
+                  AND insurance_requests.status IN (
+                      'Submitted',
+                      'Under Review'
+                  )
+            ) AS claim_summary ON TRUE
+            LEFT JOIN LATERAL (
+                SELECT
+                    activities.occurred_at,
+                    LEFT(
+                        activities.title || ' — ' || activities.body,
+                        160
+                    ) AS preview
+                FROM activities
+                JOIN activity_receipts
+                    ON activity_receipts.activity_id = activities.id
+                WHERE activities.client_id = clients.id
+                  AND activity_receipts.user_id = clients.adviser_id
+                ORDER BY activities.occurred_at DESC, activities.id DESC
+                LIMIT 1
+            ) AS latest_activity ON TRUE
+            LEFT JOIN LATERAL (
+                SELECT COUNT(*)::INTEGER AS unread_message_count
+                FROM activities
+                JOIN activity_receipts
+                    ON activity_receipts.activity_id = activities.id
+                WHERE activities.client_id = clients.id
+                  AND activities.activity_type = 'Message'
+                  AND activity_receipts.user_id = clients.adviser_id
+                  AND activity_receipts.read_at IS NULL
+            ) AS activity_summary ON TRUE
             WHERE adviser_user.email = :adviser_email
-            GROUP BY
-                clients.id,
-                client_user.name,
-                financial_positions.assets,
-                financial_positions.liabilities,
-                financial_positions.monthly_income,
-                financial_positions.monthly_expenses
             ORDER BY client_user.name
             """
         ),
@@ -197,6 +229,9 @@ def list_assigned_clients(
             financial_position=_financial_position(row),
             product_count=row.product_count,
             pending_actions=row.pending_actions,
+            latest_activity_at=row.latest_activity_at,
+            latest_activity_preview=row.latest_activity_preview,
+            unread_message_count=row.unread_message_count,
         )
         for row in rows
     ]

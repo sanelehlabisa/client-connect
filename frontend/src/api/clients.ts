@@ -16,6 +16,9 @@ export type ClientSummary = {
   financial_position: FinancialPosition;
   product_count: number;
   pending_actions: number;
+  latest_activity_at: string | null;
+  latest_activity_preview: string | null;
+  unread_message_count: number;
 };
 
 export type ClientProfile = {

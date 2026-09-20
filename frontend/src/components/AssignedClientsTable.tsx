@@ -44,9 +44,24 @@ const randCurrency = new Intl.NumberFormat("en-ZA", {
   maximumFractionDigits: 0,
 });
 
+const activityDateTime = new Intl.DateTimeFormat("en-ZA", {
+  dateStyle: "medium",
+  timeStyle: "short",
+});
+
 /** Format database decimal strings consistently as South African Rand. */
 function formatCurrency(value: number | string): string {
   return randCurrency.format(Number(value));
+}
+
+/** Format one API timestamp while keeping Clients without activity simple. */
+function formatActivityTime(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : activityDateTime.format(date);
 }
 
 /** Collect the minimum information needed to add a brokerage Client. */
@@ -282,6 +297,7 @@ export function AssignedClientsTable({
           <TableHead>
             <TableRow>
               <TableCell>Client</TableCell>
+              <TableCell>Latest activity</TableCell>
               <TableCell align="right">Monthly position</TableCell>
               <TableCell align="right">Net worth</TableCell>
               <TableCell align="right">Products</TableCell>
@@ -294,11 +310,30 @@ export function AssignedClientsTable({
               const monthlyPosition =
                 Number(client.financial_position.monthly_income) -
                 Number(client.financial_position.monthly_expenses);
+              const latestActivityTime = formatActivityTime(
+                client.latest_activity_at,
+              );
 
               return (
                 <TableRow key={client.id}>
                   <TableCell>
                     <Typography fontWeight={600}>{client.name}</Typography>
+                  </TableCell>
+                  <TableCell sx={{ maxWidth: 320, minWidth: 220 }}>
+                    <Typography
+                      noWrap
+                      title={client.latest_activity_preview ?? undefined}
+                      variant="body2"
+                    >
+                      {client.latest_activity_preview ?? "No activity yet"}
+                    </Typography>
+                    <Typography color="text.secondary" variant="caption">
+                      {latestActivityTime ?? "No messages yet"}
+                      {" · "}
+                      {client.unread_message_count === 1
+                        ? "1 unread message"
+                        : `${client.unread_message_count} unread messages`}
+                    </Typography>
                   </TableCell>
                   <TableCell align="right">
                     {formatCurrency(monthlyPosition)}
