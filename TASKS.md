@@ -11,6 +11,7 @@
 ## 1. Existing foundation - keep working
 
 - [x] Client and Adviser authentication with Keycloak roles.
+- [x] Keep the seeded Keycloak and application Client/Adviser identities aligned.
 - [x] Shared financial dashboard with Goals, Insurance, and Investments.
 - [x] Assigned-Client management and protected Adviser access.
 - [x] Client-Adviser chat, notifications, and development email.

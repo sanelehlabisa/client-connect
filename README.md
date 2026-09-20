@@ -65,13 +65,17 @@ application changes automatically.
 
 | Account | Username | Password | Access |
 | --- | --- | --- | --- |
-| Client | `thabo.mokoena` | `Client123!` | `client` role |
-| Adviser | `amina.daniels` | `Adviser123!` | Seeded Royal Square Adviser |
+| Client | `hlabisasanele730` | `Password123!` | `client` role |
+| Adviser | `lozaicmasuku` | `Password123!` | Seeded Royal Square Adviser |
 | Keycloak administrator | `admin` | `admin` | Development only |
 
 Self-registration grants the `client` role. Adviser access remains controlled
 through the Keycloak `advisers` group. These credentials and the imported realm
 are development data only.
+
+The application database matches these accounts by email. If the development
+volumes were created before these users changed, recreate the PostgreSQL and
+Keycloak volumes so the updated seed and realm import are applied together.
 
 ## Compatibility note
 

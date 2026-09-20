@@ -61,8 +61,8 @@ CREATE TABLE notifications (
 );
 
 INSERT INTO users (id, name, email) VALUES
-    ('adviser-1', 'Amina Daniels', 'amina.daniels@example.test'),
-    ('client-1', 'Thabo Mokoena', 'thabo.mokoena@example.test');
+    ('adviser-1', 'Wilson Masuku', 'lozaicmasuku@gmail.com'),
+    ('client-1', 'Sanele Hlabisa', 'hlabisasanele730@gmail.com');
 
 INSERT INTO clients (id, user_id, adviser_id) VALUES
     ('client-profile-1', 'client-1', 'adviser-1');

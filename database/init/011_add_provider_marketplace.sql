@@ -56,7 +56,7 @@ INSERT INTO marketplace_providers (
 ) VALUES
     (
         'provider-adviser-rsf',
-        'Royal Square Financial - Amina Daniels',
+        'Royal Square Financial - Wilson Masuku',
         'Financial Adviser',
         ARRAY['Financial Planning', 'Insurance Advice', 'Investment Advice'],
         4.9,
