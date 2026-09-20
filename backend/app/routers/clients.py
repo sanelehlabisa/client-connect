@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.auth import (
@@ -20,6 +20,7 @@ from app.client_repository import (
     find_client_overview,
     find_own_client_overview,
     list_assigned_clients,
+    remove_client_product,
 )
 from app.database import get_database_session
 from app.schemas import (
@@ -218,6 +219,40 @@ def add_investment_product(
             detail="Client not found.",
         )
     return product
+
+
+@router.delete(
+    "/{client_id}/products/{product_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_client_product(
+    client_id: str,
+    product_id: str,
+    user: Annotated[AuthenticatedUser, Depends(get_current_user)],
+    session: Annotated[Session, Depends(get_database_session)],
+) -> Response:
+    """Let a Client or assigned Adviser remove a Goal or Investment."""
+
+    is_adviser = "adviser" in user.roles
+    if not is_adviser and "client" not in user.roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="A ClientConnect role is required.",
+        )
+
+    removed = remove_client_product(
+        session=session,
+        client_id=client_id,
+        product_id=product_id,
+        user_email=require_email(user),
+        is_adviser=is_adviser,
+    )
+    if not removed:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Removable product not found.",
+        )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/{client_id}", response_model=ClientOverview)

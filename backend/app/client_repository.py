@@ -479,3 +479,46 @@ def create_investment_product(
 
     session.commit()
     return _product(row)
+
+
+def remove_client_product(
+    session: Session,
+    client_id: str,
+    product_id: str,
+    user_email: str,
+    is_adviser: bool,
+) -> bool:
+    """Remove a Goal or Investment owned by an allowed Client profile."""
+
+    removed_id = session.execute(
+        text(
+            """
+            DELETE FROM products
+            USING clients, users AS client_user, users AS adviser_user
+            WHERE products.id = :product_id
+              AND products.client_id = clients.id
+              AND clients.id = :client_id
+              AND clients.user_id = client_user.id
+              AND clients.adviser_id = adviser_user.id
+              AND products.product_type IN ('GOAL', 'INVESTMENT')
+              AND (
+                    (:is_adviser AND adviser_user.email = :user_email)
+                    OR
+                    (NOT :is_adviser AND client_user.email = :user_email)
+              )
+            RETURNING products.id
+            """
+        ),
+        {
+            "product_id": product_id,
+            "client_id": client_id,
+            "user_email": user_email,
+            "is_adviser": is_adviser,
+        },
+    ).scalar_one_or_none()
+    if removed_id is None:
+        session.rollback()
+        return False
+
+    session.commit()
+    return True

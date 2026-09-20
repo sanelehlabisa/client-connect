@@ -17,6 +17,7 @@ type ProductDetailsDialogProps = {
   canReportAccident: boolean;
   onClose: () => void;
   onReportAccident: (product: Product) => void;
+  onRemove: (product: Product) => void;
   product: Product | null;
 };
 
@@ -89,6 +90,7 @@ export function ProductDetailsDialog({
   canReportAccident,
   onClose,
   onReportAccident,
+  onRemove,
   product,
 }: ProductDetailsDialogProps) {
   if (!product) {
@@ -234,6 +236,11 @@ export function ProductDetailsDialog({
         )}
       </DialogContent>
       <DialogActions>
+        {(isGoal || isInvestment) && (
+          <Button color="error" onClick={() => onRemove(product)}>
+            Remove
+          </Button>
+        )}
         <Button onClick={onClose}>Close</Button>
         {isMotorInsurance && canReportAccident && (
           <Button

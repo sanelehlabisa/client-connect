@@ -30,6 +30,7 @@ import { AddInsuranceDialog } from "./AddInsuranceDialog";
 import { AddInvestmentDialog } from "./AddInvestmentDialog";
 import { ClaimProgressPanel } from "./ClaimProgressPanel";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
+import { RemoveProductDialog } from "./RemoveProductDialog";
 import { ServiceRequestsPanel } from "./ServiceRequestsPanel";
 import { ChatPanel } from "./ChatPanel";
 
@@ -92,6 +93,7 @@ export function ClientOverviewPanel({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [productToRemove, setProductToRemove] = useState<Product | null>(null);
   const [accidentProduct, setAccidentProduct] = useState<Product | null>(null);
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
   const [insuranceDialogOpen, setInsuranceDialogOpen] = useState(false);
@@ -346,7 +348,30 @@ export function ClientOverviewPanel({
           setSelectedProduct(null);
           setAccidentProduct(product);
         }}
+        onRemove={(product) => {
+          setSelectedProduct(null);
+          setProductToRemove(product);
+        }}
         product={selectedProduct}
+      />
+      <RemoveProductDialog
+        clientId={overview.id}
+        getAccessToken={getAccessToken}
+        onClose={() => setProductToRemove(null)}
+        onRemoved={(productId) => {
+          setOverview((current) =>
+            current
+              ? {
+                  ...current,
+                  products: current.products.filter(
+                    (product) => product.id !== productId,
+                  ),
+                }
+              : current,
+          );
+          setProductToRemove(null);
+        }}
+        product={productToRemove}
       />
       <AccidentReportDialog
         clientId={overview.id}

@@ -230,3 +230,27 @@ export async function createInvestmentProduct(
 
   return (await response.json()) as Product;
 }
+
+/** Remove a Goal or Investment from an owned or assigned Client dashboard. */
+export async function removeProduct(
+  accessToken: string,
+  clientId: string,
+  productId: string,
+): Promise<void> {
+  const response = await fetch(
+    `${apiUrl}/clients/${clientId}/products/${productId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as {
+      detail?: string;
+    } | null;
+    throw new Error(body?.detail ?? "The product could not be removed.");
+  }
+}
