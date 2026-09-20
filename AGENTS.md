@@ -32,7 +32,8 @@ The must-win demo is one shared product workflow used by the Client and Adviser:
 5. The system then automatically shows three seeded Repairers. The Adviser
    selects one and the demo treats it as accepted immediately.
 6. The Client and Adviser see the same preferred times and selected providers
-   in the shared Product view.
+   in the shared Product view. Each accepted appointment is also added to the
+   existing reminders for both roles.
 7. Every user message, system event, decision, and provider selection is
    timestamped in one Product activity timeline.
 

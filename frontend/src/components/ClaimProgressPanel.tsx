@@ -130,7 +130,8 @@ function SelectedProviders({ request }: { request: InsuranceRequest }) {
         </Typography>
         {request.assessor_selected_at && (
           <Typography color="success.main" variant="caption">
-            Accepted immediately for this demo
+            Accepted immediately
+            {request.preferred_assessment_at ? " - added to reminders" : ""}
           </Typography>
         )}
       </Box>
@@ -143,7 +144,8 @@ function SelectedProviders({ request }: { request: InsuranceRequest }) {
         </Typography>
         {request.repairer_selected_at && (
           <Typography color="success.main" variant="caption">
-            Accepted immediately for this demo
+            Accepted immediately
+            {request.preferred_repair_at ? " - added to reminders" : ""}
           </Typography>
         )}
       </Box>

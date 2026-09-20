@@ -11,6 +11,7 @@ from pydantic import ValidationError
 
 from app.insurance_request_repository import (
     InvalidClaimProviderSelectionError,
+    _ensure_selected_provider_reminders,
     get_next_claim_provider_shortlist,
     select_next_claim_provider,
 )
@@ -46,6 +47,7 @@ class SingleRowSession:
         self.statement = ""
         self.parameters: dict[str, Any] = {}
         self.execute_count = 0
+        self.commit_count = 0
 
     def execute(
         self,
@@ -58,6 +60,11 @@ class SingleRowSession:
         self.parameters = parameters
         self.execute_count += 1
         return SingleRowResult(self.row)
+
+    def commit(self) -> None:
+        """Record a transaction commit without requiring PostgreSQL."""
+
+        self.commit_count += 1
 
 
 def recommendation(
@@ -255,7 +262,9 @@ class ClaimProviderWorkflowTests(unittest.TestCase):
         with patch(
             "app.insurance_request_repository._find_request",
             return_value=existing_request,
-        ) as find_request:
+        ) as find_request, patch(
+            "app.insurance_request_repository._ensure_selected_provider_reminders"
+        ) as ensure_reminders:
             result = select_next_claim_provider(
                 session,  # type: ignore[arg-type]
                 "claim-1",
@@ -265,7 +274,9 @@ class ClaimProviderWorkflowTests(unittest.TestCase):
 
         self.assertIs(result, existing_request)
         self.assertEqual(session.execute_count, 1)
+        self.assertEqual(session.commit_count, 1)
         find_request.assert_called_once_with(session, "claim-1")
+        ensure_reminders.assert_called_once_with(session, existing_request)
 
     def test_completed_selections_cannot_be_replaced(self) -> None:
         """Once both providers are stored, a different choice is rejected."""
@@ -286,6 +297,52 @@ class ClaimProviderWorkflowTests(unittest.TestCase):
             )
 
         self.assertEqual(session.execute_count, 1)
+
+    def test_selected_providers_use_their_preferred_appointment_times(self) -> None:
+        """Create one shared reminder for each stored provider appointment."""
+
+        assessment_at = datetime(2026, 9, 22, 8, tzinfo=timezone.utc)
+        repair_at = assessment_at + timedelta(days=2)
+        request = SimpleNamespace(
+            id="claim-1",
+            client_id="client-1",
+            selected_assessor_id="assessor-1",
+            selected_assessor_name="Jozi Assessors",
+            preferred_assessment_at=assessment_at,
+            selected_repairer_id="repairer-1",
+            selected_repairer_name="Midrand Motor Works",
+            preferred_repair_at=repair_at,
+        )
+
+        with patch(
+            "app.insurance_request_repository.add_claim_appointment_reminder"
+        ) as add_reminder:
+            _ensure_selected_provider_reminders(
+                object(),  # type: ignore[arg-type]
+                request,  # type: ignore[arg-type]
+            )
+
+        self.assertEqual(add_reminder.call_count, 2)
+        self.assertEqual(
+            add_reminder.call_args_list[0].kwargs,
+            {
+                "request_id": "claim-1",
+                "client_id": "client-1",
+                "provider_type": "Assessor",
+                "provider_name": "Jozi Assessors",
+                "appointment_at": assessment_at,
+            },
+        )
+        self.assertEqual(
+            add_reminder.call_args_list[1].kwargs,
+            {
+                "request_id": "claim-1",
+                "client_id": "client-1",
+                "provider_type": "Repairer",
+                "provider_name": "Midrand Motor Works",
+                "appointment_at": repair_at,
+            },
+        )
 
 
 if __name__ == "__main__":

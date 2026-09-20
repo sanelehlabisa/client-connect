@@ -12,6 +12,7 @@ from app.activity_repository import ActivityRecipient, create_activity
 from app.email_service import send_email
 from app.provider_gateway import submit_claim
 from app.provider_matching import match_claim_providers
+from app.reminder_repository import add_claim_appointment_reminder
 from app.schemas import (
     ClaimProviderShortlist,
     ClaimProviderType,
@@ -236,6 +237,32 @@ def _find_claim_participants(
         adviser_user_id=row.adviser_user_id,
         adviser_email=row.adviser_email,
     )
+
+
+def _ensure_selected_provider_reminders(
+    session: Session,
+    request: InsuranceRequest,
+) -> None:
+    """Keep both selected claim appointments in the shared reminders."""
+
+    if request.selected_assessor_id and request.selected_assessor_name:
+        add_claim_appointment_reminder(
+            session,
+            request_id=request.id,
+            client_id=request.client_id,
+            provider_type="Assessor",
+            provider_name=request.selected_assessor_name,
+            appointment_at=request.preferred_assessment_at,
+        )
+    if request.selected_repairer_id and request.selected_repairer_name:
+        add_claim_appointment_reminder(
+            session,
+            request_id=request.id,
+            client_id=request.client_id,
+            provider_type="Repairer",
+            provider_name=request.selected_repairer_name,
+            appointment_at=request.preferred_repair_at,
+        )
 
 
 def create_insurance_request(
@@ -608,7 +635,10 @@ def select_next_claim_provider(
         row.selected_assessor_id,
         row.selected_repairer_id,
     }:
-        return _find_request(session, request_id)
+        request = _find_request(session, request_id)
+        _ensure_selected_provider_reminders(session, request)
+        session.commit()
+        return request
 
     provider_type: ClaimProviderType
     if row.selected_assessor_id is None:
@@ -663,11 +693,19 @@ def select_next_claim_provider(
 
     request = _find_request(session, request_id)
     participants = _find_claim_participants(session, request_id)
+    _ensure_selected_provider_reminders(session, request)
+    appointment_at = (
+        request.preferred_assessment_at
+        if provider_type == "Assessor"
+        else request.preferred_repair_at
+    )
     title = f"{provider_type} selected"
     message = (
         f"{selected_provider.name} was selected and accepted immediately for "
         "the demo. The preferred appointment is recorded on the claim."
     )
+    if appointment_at is not None:
+        message += " It was also added to reminders for both users."
     session.execute(
         text(
             """

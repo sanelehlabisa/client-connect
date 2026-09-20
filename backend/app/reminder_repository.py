@@ -1,12 +1,75 @@
 """Database queries for Client and Adviser reminders."""
 
-from datetime import date
-from uuid import uuid4
+from datetime import date, datetime, timedelta, timezone
+from uuid import NAMESPACE_URL, uuid4, uuid5
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.schemas import Reminder
+from app.schemas import ClaimProviderType, Reminder
+
+SOUTH_AFRICA_TIME = timezone(timedelta(hours=2))
+
+
+def add_claim_appointment_reminder(
+    session: Session,
+    *,
+    request_id: str,
+    client_id: str,
+    provider_type: ClaimProviderType,
+    provider_name: str,
+    appointment_at: datetime | None,
+) -> str | None:
+    """Add one shared, retry-safe reminder for a selected claim provider."""
+
+    if appointment_at is None:
+        return None
+
+    stored_time = appointment_at
+    if stored_time.tzinfo is None:
+        stored_time = stored_time.replace(tzinfo=timezone.utc)
+    local_time = stored_time.astimezone(SOUTH_AFRICA_TIME)
+    appointment_label = (
+        "Vehicle assessment" if provider_type == "Assessor" else "Vehicle repair"
+    )
+    time_suffix = f" at {local_time:%H:%M}"
+    title_prefix = f"{appointment_label} with "
+    provider_length = 160 - len(title_prefix) - len(time_suffix)
+    title = f"{title_prefix}{provider_name[:provider_length]}{time_suffix}"
+    reminder_id = str(
+        uuid5(
+            NAMESPACE_URL,
+            f"client-connect:{request_id}:{provider_type}",
+        )
+    )
+    session.execute(
+        text(
+            """
+            INSERT INTO reminders (
+                id,
+                client_id,
+                title,
+                due_date,
+                audience
+            )
+            VALUES (
+                :reminder_id,
+                :client_id,
+                :title,
+                :due_date,
+                'Both'
+            )
+            ON CONFLICT (id) DO NOTHING
+            """
+        ),
+        {
+            "reminder_id": reminder_id,
+            "client_id": client_id,
+            "title": title,
+            "due_date": local_time.date(),
+        },
+    )
+    return reminder_id
 
 
 def list_reminders(

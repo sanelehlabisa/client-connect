@@ -68,6 +68,8 @@
   mock Assessors, then the top three mock Repairers.
 - [x] Let the Adviser select each provider once and treat the mock provider as
   accepted immediately; show the same selection to the Client.
+- [x] Add each accepted assessment and repair appointment to the shared
+  reminders using the Client's preferred date and time.
 - [x] Record provider selections in the shared activity timeline.
 - [x] Add focused tests for date order, assignment, role, shortlist membership,
   selection order, and duplicate-selection prevention.
