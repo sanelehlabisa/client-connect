@@ -7,6 +7,7 @@ from uuid import uuid4
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.activity_repository import ActivityRecipient, create_activity
 from app.schemas import ChatMessage
 
 
@@ -184,6 +185,21 @@ def create_message(
             "title": f"New message from {sender_name}",
             "message": body,
         },
+    )
+    create_activity(
+        session,
+        client_id=client_id,
+        activity_type="Message",
+        source_type="message",
+        source_id=message_id,
+        title=f"Message from {sender_name}",
+        body=body,
+        actor_user_id=sender_user_id,
+        occurred_at=row.created_at,
+        recipients=[
+            ActivityRecipient(user_id=sender_user_id, is_read=True),
+            ActivityRecipient(user_id=recipient_user_id),
+        ],
     )
     session.commit()
 

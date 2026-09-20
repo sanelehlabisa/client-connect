@@ -20,6 +20,7 @@ from app.auth import (
 )
 from app.database import database_is_ready
 from app.reminder_delivery import run_due_reminder_delivery
+from app.routers.activities import router as activities_router
 from app.routers.clients import router as clients_router
 from app.routers.insurance_requests import client_router, review_router
 from app.routers.messages import router as messages_router
@@ -66,6 +67,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(clients_router)
+app.include_router(activities_router)
 app.include_router(client_router)
 app.include_router(review_router)
 app.include_router(messages_router)

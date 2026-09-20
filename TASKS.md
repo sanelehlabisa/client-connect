@@ -38,7 +38,7 @@
   list; remove the repeated role, name, welcome copy, and separate Claim reviews.
 - [x] Do not add separate notification, reminder, or claim sections to the
   Adviser dashboard; open that work through the relevant Client and Product.
-- [ ] Add an additive activity/read model so every event has a Client, optional
+- [x] Add an additive activity/read model so every event has a Client, optional
   Product, timestamp, intended recipient, and read state.
 - [ ] Add latest activity time, a short activity preview, and unread message
   count to each assigned-Client summary.

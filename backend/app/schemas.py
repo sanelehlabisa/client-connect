@@ -25,6 +25,16 @@ InsuranceRequestProgressStage = Literal[
     "Closed",
 ]
 
+ActivityType = Literal[
+    "Message",
+    "Claim",
+    "Reminder",
+    "Email",
+    "Service",
+    "Product",
+    "System",
+]
+
 ServiceRequestType = Literal[
     "Policy Document",
     "Border Letter",
@@ -274,6 +284,21 @@ class ChatMessage(BaseModel):
     body: str
     sent_by_me: bool
     created_at: datetime
+
+
+class ActivityItem(BaseModel):
+    """One shared Client event with read state for the current recipient."""
+
+    id: str
+    client_id: str
+    product_id: str | None
+    activity_type: ActivityType
+    title: str
+    body: str
+    actor_name: str | None
+    is_read: bool
+    read_at: datetime | None
+    occurred_at: datetime
 
 
 class NotificationItem(BaseModel):

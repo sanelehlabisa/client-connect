@@ -6,6 +6,7 @@ from uuid import uuid4
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.activity_repository import ActivityRecipient, create_activity
 from app.database import engine
 from app.email_service import send_email
 
@@ -27,6 +28,7 @@ def deliver_due_reminders(session: Session) -> ReminderDeliverySummary:
             """
             SELECT
                 reminders.id,
+                reminders.client_id,
                 reminders.title,
                 reminders.due_date,
                 reminders.audience,
@@ -127,6 +129,22 @@ def deliver_due_reminders(session: Session) -> ReminderDeliverySummary:
             ]
             emails_sent += sum(delivery_results)
             if all(delivery_results):
+                create_activity(
+                    session,
+                    client_id=row.client_id,
+                    activity_type="Email",
+                    source_type="reminder-email",
+                    source_id=row.id,
+                    title="Reminder email sent",
+                    body=(
+                        f"{row.title} for {row.client_name} was emailed for "
+                        f"{formatted_date}."
+                    ),
+                    recipients=[
+                        ActivityRecipient(user_id=user_id)
+                        for user_id, _name, _email in recipients
+                    ],
+                )
                 session.execute(
                     text(
                         """

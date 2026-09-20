@@ -1,11 +1,13 @@
 """Database queries for the insurance review workflow."""
 
+from dataclasses import dataclass
 from typing import Any
 from uuid import uuid4
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.activity_repository import ActivityRecipient, create_activity
 from app.email_service import send_email
 from app.provider_gateway import submit_claim
 from app.schemas import (
@@ -46,6 +48,16 @@ PROGRESS_TRANSITIONS: dict[str, str] = {
     "Repair In Progress": "Car Hire Arranged",
     "Car Hire Arranged": "Ready for Collection",
 }
+
+
+@dataclass(frozen=True)
+class ClaimParticipants:
+    """Application identities involved in one Client claim."""
+
+    client_user_id: str
+    client_email: str
+    adviser_user_id: str
+    adviser_email: str
 
 
 class InvalidStatusTransitionError(Exception):
@@ -166,6 +178,38 @@ def _find_request(session: Session, request_id: str) -> InsuranceRequest:
     return _insurance_request(row)
 
 
+def _find_claim_participants(
+    session: Session,
+    request_id: str,
+) -> ClaimParticipants:
+    """Return the Client and assigned Adviser for an accessible claim."""
+
+    row = session.execute(
+        text(
+            """
+            SELECT
+                client_user.id AS client_user_id,
+                client_user.email AS client_email,
+                adviser_user.id AS adviser_user_id,
+                adviser_user.email AS adviser_email
+            FROM insurance_requests
+            JOIN products ON products.id = insurance_requests.product_id
+            JOIN clients ON clients.id = products.client_id
+            JOIN users AS client_user ON client_user.id = clients.user_id
+            JOIN users AS adviser_user ON adviser_user.id = clients.adviser_id
+            WHERE insurance_requests.id = :request_id
+            """
+        ),
+        {"request_id": request_id},
+    ).one()
+    return ClaimParticipants(
+        client_user_id=row.client_user_id,
+        client_email=row.client_email,
+        adviser_user_id=row.adviser_user_id,
+        adviser_email=row.adviser_email,
+    )
+
+
 def create_insurance_request(
     session: Session,
     client_id: str,
@@ -240,18 +284,7 @@ def create_insurance_request(
         },
     )
     request = _find_request(session, inserted_id)
-    adviser_email = session.execute(
-        text(
-            """
-            SELECT adviser_user.email
-            FROM products
-            JOIN clients ON clients.id = products.client_id
-            JOIN users AS adviser_user ON adviser_user.id = clients.adviser_id
-            WHERE products.id = :product_id
-            """
-        ),
-        {"product_id": request.product_id},
-    ).scalar_one()
+    participants = _find_claim_participants(session, request.id)
     session.execute(
         text(
             """
@@ -286,9 +319,28 @@ def create_insurance_request(
             ),
         },
     )
+    create_activity(
+        session,
+        client_id=request.client_id,
+        product_id=request.product_id,
+        actor_user_id=participants.client_user_id,
+        activity_type="Claim",
+        source_type="claim-submitted",
+        source_id=request.id,
+        title="Claim submitted",
+        body=(
+            f"{request.client_name} submitted a claim for "
+            f"{request.product_name}. Provider reference: "
+            f"{request.provider_claim_number}."
+        ),
+        recipients=[
+            ActivityRecipient(participants.client_user_id, is_read=True),
+            ActivityRecipient(participants.adviser_user_id),
+        ],
+    )
     session.commit()
     send_email(
-        recipient=adviser_email,
+        recipient=participants.adviser_email,
         subject=f"New claim from {request.client_name}",
         body=(
             f"{request.client_name} submitted a claim for "
@@ -519,26 +571,27 @@ def update_insurance_request_status(
             "message": adviser_activity_message,
         },
     )
-    client_email: str | None = None
-    if requested_status != "Under Review":
-        client_email = session.execute(
-            text(
-                """
-                SELECT client_user.email
-                FROM insurance_requests
-                JOIN products ON products.id = insurance_requests.product_id
-                JOIN clients ON clients.id = products.client_id
-                JOIN users AS client_user ON client_user.id = clients.user_id
-                WHERE insurance_requests.id = :request_id
-                """
-            ),
-            {"request_id": request_id},
-        ).scalar_one()
+    participants = _find_claim_participants(session, request_id)
+    create_activity(
+        session,
+        client_id=request.client_id,
+        product_id=request.product_id,
+        actor_user_id=participants.adviser_user_id,
+        activity_type="Claim",
+        source_type="claim-status",
+        source_id=f"{request_id}:{requested_status}",
+        title=f"Claim status: {requested_status}",
+        body=adviser_activity_message,
+        recipients=[
+            ActivityRecipient(participants.adviser_user_id, is_read=True),
+            ActivityRecipient(participants.client_user_id),
+        ],
+    )
 
     session.commit()
-    if client_email is not None:
+    if requested_status != "Under Review":
         send_email(
-            recipient=client_email,
+            recipient=participants.client_email,
             subject=notification_title,
             body=(
                 f"{formatted_message}\n\n"
@@ -630,6 +683,25 @@ def update_insurance_request_progress(
             ),
         },
     )
+    participants = _find_claim_participants(session, request_id)
+    create_activity(
+        session,
+        client_id=request.client_id,
+        product_id=request.product_id,
+        actor_user_id=participants.adviser_user_id,
+        activity_type="Claim",
+        source_type="claim-progress",
+        source_id=f"{request_id}:{requested_stage}",
+        title=f"Claim progress: {requested_stage}",
+        body=(
+            f"{request.client_name}'s {request.product_name} claim is now "
+            f"{requested_stage}."
+        ),
+        recipients=[
+            ActivityRecipient(participants.adviser_user_id, is_read=True),
+            ActivityRecipient(participants.client_user_id),
+        ],
+    )
     session.commit()
     return request
 
@@ -719,6 +791,25 @@ def close_insurance_request(
                 f'Review: "{review}"'
             ),
         },
+    )
+    participants = _find_claim_participants(session, request_id)
+    create_activity(
+        session,
+        client_id=request.client_id,
+        product_id=request.product_id,
+        actor_user_id=participants.client_user_id,
+        activity_type="Claim",
+        source_type="claim-closed",
+        source_id=request_id,
+        title="Claim closed",
+        body=(
+            f"{request.client_name} closed the {request.product_name} claim "
+            f"with a {provider_rating}/5 provider rating."
+        ),
+        recipients=[
+            ActivityRecipient(participants.client_user_id, is_read=True),
+            ActivityRecipient(participants.adviser_user_id),
+        ],
     )
     session.commit()
     return request
