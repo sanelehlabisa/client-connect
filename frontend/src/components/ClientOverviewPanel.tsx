@@ -29,6 +29,7 @@ import { AddInsuranceDialog } from "./AddInsuranceDialog";
 import { AddInvestmentDialog } from "./AddInvestmentDialog";
 import { ClaimProgressPanel } from "./ClaimProgressPanel";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
+import { ServiceRequestsPanel } from "./ServiceRequestsPanel";
 import { ChatPanel } from "./ChatPanel";
 
 type ClientOverviewPanelProps = {
@@ -277,6 +278,10 @@ export function ClientOverviewPanel({
           </TableBody>
         </Table>
       </TableContainer>
+      <ServiceRequestsPanel
+        clientId={overview.id}
+        getAccessToken={getAccessToken}
+      />
       <ClaimProgressPanel
         clientId={overview.id}
         getAccessToken={getAccessToken}

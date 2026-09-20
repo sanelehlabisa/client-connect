@@ -25,6 +25,13 @@ InsuranceRequestProgressStage = Literal[
     "Closed",
 ]
 
+ServiceRequestType = Literal[
+    "Policy Document",
+    "Border Letter",
+    "Investment IRP5",
+    "Consultation",
+]
+
 
 class FinancialPosition(BaseModel):
     """A client's current high-level financial position."""
@@ -247,6 +254,32 @@ class ReminderCreate(BaseModel):
         if self.due_date < date.today():
             raise ValueError("Due date cannot be in the past.")
         return self
+
+
+class ServiceRequestCreate(BaseModel):
+    """A document or consultation request submitted by a Client."""
+
+    request_type: ServiceRequestType
+    details: str = Field(min_length=2, max_length=2000)
+
+    @field_validator("details", mode="before")
+    @classmethod
+    def strip_details(cls, value: object) -> object:
+        """Reject request details that only contain spaces."""
+
+        return value.strip() if isinstance(value, str) else value
+
+
+class ServiceRequest(BaseModel):
+    """One service request visible to a Client and assigned Adviser."""
+
+    id: str
+    client_id: str
+    client_name: str
+    request_type: ServiceRequestType
+    details: str
+    status: Literal["Submitted"]
+    created_at: datetime
 
 
 class InsuranceRequestCreate(BaseModel):

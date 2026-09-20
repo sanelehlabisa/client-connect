@@ -107,6 +107,10 @@ For this PoC, use seeded products. Product creation is deferred.
 - [x] Send due reminders through in-app notifications and email.
 - [x] Let Clients and Advisers mark their visible reminders complete.
 
+## Client service requests
+
+- [x] Let Clients request a policy document, border letter, IRP5, or consultation and notify their Adviser.
+
 ## Deferred
 
 - [ ] Assessors, repairers, and advanced claim automation.
