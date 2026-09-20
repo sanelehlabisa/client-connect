@@ -28,7 +28,7 @@ const emptyGoal: GoalCreate = {
   target_date: "",
 };
 
-/** Collect the small set of values needed for a Client financial Goal. */
+/** Collect the values needed for a Client Investment Goal. */
 export function AddGoalDialog({
   clientId,
   getAccessToken,
@@ -74,7 +74,7 @@ export function AddGoalDialog({
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "The Goal could not be created.",
+          : "The Investment Goal could not be created.",
       );
     } finally {
       setSaving(false);
@@ -84,7 +84,7 @@ export function AddGoalDialog({
   return (
     <Dialog fullWidth maxWidth="sm" onClose={handleClose} open={open}>
       <Stack component="form" onSubmit={(event) => void handleSubmit(event)}>
-        <DialogTitle>Add a financial Goal</DialogTitle>
+        <DialogTitle>Add an Investment Goal</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
             {error && <Alert severity="error">{error}</Alert>}
@@ -92,7 +92,7 @@ export function AddGoalDialog({
               autoFocus
               disabled={saving}
               inputProps={{ maxLength: 120 }}
-              label="Goal name"
+              label="Investment Goal name"
               onChange={(event) => updateGoal("name", event.target.value)}
               required
               value={goal.name}
@@ -144,7 +144,7 @@ export function AddGoalDialog({
             Cancel
           </Button>
           <Button disabled={saving} type="submit" variant="contained">
-            {saving ? "Adding..." : "Add Goal"}
+            {saving ? "Adding..." : "Add Investment Goal"}
           </Button>
         </DialogActions>
       </Stack>

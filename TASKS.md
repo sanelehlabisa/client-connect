@@ -52,16 +52,25 @@
 
 - [x] Show the signed-in user's name with their role underneath and a red icon Log out action.
 - [x] Add a small ClientConnect wordmark to the navigation bar.
+- [x] Keep navigation sticky and place the animated financial-advice shortcut beside Log out.
 - [x] Use canonical Client-by-ID and Product-by-ID routes.
 - [x] Present the financial position as one compact label-and-value card.
 - [x] Keep the Client page focused on financial position, products, and chat.
 - [x] Send `Get Financial Advice` directly to the Adviser conversation.
-- [x] Limit new Client product actions to Goals and Investments.
+- [x] Present Investment Goal and Insurance as the two new-product actions.
 - [x] Show active automatic reminders inside the conversation instead of a separate table.
 - [x] Show notification activity inside chat and remove the separate Notifications page.
 - [ ] Link messages and activity to a Product so Product-by-ID can show a filtered interaction timeline.
 
-## 7. P1 - Automatic Adviser task recommendations
+## 7. P1 - JSON-driven product model
+
+- [ ] Define `Investment Goal` and `Insurance` as the two canonical product types.
+- [ ] Add one small versioned JSON schema describing each type's labels, questions, and behavior.
+- [ ] Render product creation questions and details from the JSON schema.
+- [ ] Migrate legacy `GOAL` and `INVESTMENT` records safely into `Investment Goal` without losing data.
+- [ ] Add focused validation tests for both configured product types.
+
+## 8. P1 - Automatic Adviser task recommendations
 
 - [ ] Generate simple, deterministic recommended tasks from Client products and requests.
 - [ ] Deduplicate recommendations so the Adviser is not repeatedly notified.
@@ -69,13 +78,13 @@
 - [ ] Show a non-blocking popup when a new recommendation arrives in ClientConnect.
 - [ ] Let the Adviser open the Client or create a reminder from the recommendation.
 
-## 8. P1 - Seeded financial-product discovery
+## 9. P1 - Seeded financial-product discovery
 
 - [ ] Show selected seeded Financial Institution products to Clients.
 - [ ] Display provider, product name, product type, and basic information.
 - [ ] Keep product publishing and Financial Institution accounts deferred.
 
-## 9. P2 - Optional claim-provider matching
+## 10. P2 - Optional claim-provider matching
 
 Start only after the Adviser matching demo is complete.
 
@@ -84,7 +93,7 @@ Start only after the Adviser matching demo is complete.
 - [ ] Show two recommendations and store the selected provider on the claim.
 - [ ] Continue the existing claim workflow after selection.
 
-## 10. Demo acceptance
+## 11. Demo acceptance
 
 - [x] Client logs in and sees their financial dashboard.
 - [x] Client selects `Get Financial Advice` and reaches the Adviser conversation.

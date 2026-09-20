@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Box,
   Button,
   Chip,
   CircularProgress,
-  Fab,
   Paper,
   Stack,
   Table,
@@ -27,7 +26,7 @@ import {
 import { useAuth } from "../auth/AuthContext";
 import { AccidentReportDialog } from "./AccidentReportDialog";
 import { AddGoalDialog } from "./AddGoalDialog";
-import { AddInvestmentDialog } from "./AddInvestmentDialog";
+import { AddInsuranceDialog } from "./AddInsuranceDialog";
 import { ArchiveInsuranceDialog } from "./ArchiveInsuranceDialog";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
 import { RemoveProductDialog } from "./RemoveProductDialog";
@@ -86,7 +85,7 @@ function productValue(product: Product): string {
 /** Convert an API product type into a user-facing label. */
 function productTypeLabel(product: Product): string {
   if (product.product_type === "GOAL") {
-    return "Goal";
+    return "Investment Goal";
   }
   if (product.product_type === "INVESTMENT") {
     return "Investment";
@@ -110,8 +109,7 @@ export function ClientOverviewPanel({
     useState<Product | null>(null);
   const [accidentProduct, setAccidentProduct] = useState<Product | null>(null);
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
-  const [investmentDialogOpen, setInvestmentDialogOpen] = useState(false);
-  const chatSection = useRef<HTMLDivElement | null>(null);
+  const [insuranceDialogOpen, setInsuranceDialogOpen] = useState(false);
   const isAdviser = auth.roles.includes("adviser");
 
   useEffect(() => {
@@ -189,27 +187,6 @@ export function ClientOverviewPanel({
 
   return (
     <Stack spacing={2.5}>
-      {!isAdviser && (
-        <Fab
-          color="primary"
-          onClick={() =>
-            chatSection.current?.scrollIntoView({ behavior: "smooth" })
-          }
-          size="medium"
-          sx={{
-            bottom: { xs: 16, sm: 24 },
-            fontWeight: 800,
-            position: "fixed",
-            right: { xs: 16, sm: 24 },
-            textTransform: "none",
-            zIndex: 10,
-          }}
-          variant="extended"
-        >
-          Need Financial Advice?
-        </Fab>
-      )}
-
       <Paper
         aria-label="Financial position"
         variant="outlined"
@@ -258,18 +235,18 @@ export function ClientOverviewPanel({
               Products
             </Typography>
             <Typography color="text.secondary" variant="body2">
-              Goals and investments in one simple view.
+              Investment Goals and Insurance in one simple view.
             </Typography>
           </Box>
           <Stack direction="row" flexWrap="wrap" spacing={1} useFlexGap>
             <Button onClick={() => setGoalDialogOpen(true)} variant="outlined">
-              Add Goal
+              Add Investment Goal
             </Button>
             <Button
-              onClick={() => setInvestmentDialogOpen(true)}
-              variant="outlined"
+              onClick={() => setInsuranceDialogOpen(true)}
+              variant="contained"
             >
-              Add Investment
+              Add policy
             </Button>
           </Stack>
         </Box>
@@ -373,7 +350,7 @@ export function ClientOverviewPanel({
           </Table>
         </TableContainer>
       )}
-      <Box ref={chatSection}>
+      <Box id="client-chat" sx={{ scrollMarginTop: 96 }}>
         <ChatPanel
           clientId={overview.id}
           getAccessToken={getAccessToken}
@@ -466,10 +443,10 @@ export function ClientOverviewPanel({
         }}
         open={goalDialogOpen}
       />
-      <AddInvestmentDialog
+      <AddInsuranceDialog
         clientId={overview.id}
         getAccessToken={getAccessToken}
-        onClose={() => setInvestmentDialogOpen(false)}
+        onClose={() => setInsuranceDialogOpen(false)}
         onCreated={(product) => {
           setOverview((current) =>
             current
@@ -482,7 +459,7 @@ export function ClientOverviewPanel({
               : current,
           );
         }}
-        open={investmentDialogOpen}
+        open={insuranceDialogOpen}
       />
     </Stack>
   );
