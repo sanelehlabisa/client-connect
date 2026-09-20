@@ -180,10 +180,11 @@ export function ClientOverviewPanel({
     ["Monthly income", position.monthly_income],
     ["Monthly expenses", position.monthly_expenses],
   ] as const;
+  const overviewClientId = overview.id;
 
   function closeProductRoute(): void {
     if (productId) {
-      navigate(`/clients/${overview.id}`);
+      navigate(`/clients/${overviewClientId}`);
     }
   }
 
