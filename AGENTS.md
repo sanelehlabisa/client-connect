@@ -23,19 +23,26 @@ Client experience intentionally small.
 The must-win demo is one shared product workflow used by the Client and Adviser:
 
 1. The Client creates an Investment Goal and sees its progress.
-2. The Client opens owned Insurance and submits a claim form.
-3. Every message, status change, appointment, document, provider request, and
-   decision appears in the chat/activity timeline for that Product.
-4. The Adviser reviews the claim and selects one of three seeded Assessors.
-5. The Client chooses an assessment date and time. Do not add real scheduling
-   or artificial waiting; a simple state transition is enough for the demo.
-6. The Adviser uploads the mock Assessor report on the same Product view.
-7. The system emails claim and assessment information to three matched seeded
-   service providers through MailHog, then exposes mock quotes to the Adviser.
-8. The Adviser selects a quote and records the excess, approved amount, and
-   final claim balance.
-9. The Adviser generates one claim-summary PDF and manually emails it to the
-   seeded Financial Institution through MailHog.
+2. The Client opens owned Insurance and submits the initial claim information.
+3. The assigned Adviser opens the same Product view and approves, requests
+   changes to, or rejects the claim. Do not keep a separate Claim review page.
+4. After approval, the system recommends three seeded Assessors and the Adviser
+   selects one.
+5. The Client enters an assessment date and time only when that step becomes
+   active. Assume the seeded provider accepts it; do not build real scheduling.
+6. The system generates a mock assessment report and logs it without an
+   Assessor login, integration, or artificial wait.
+7. The system recommends three seeded Repairers and the Adviser selects one.
+8. The Client enters a repair date and time only after Repairer selection.
+9. The Adviser records the excess, approved amount, selected quote, and final
+   claim balance.
+10. Immediately before PDF generation, the system records one demo transaction
+    charge against the brokerage/Adviser and adds an Adviser-only activity with
+    its amount, reference, and time. This is not a real payment.
+11. The Adviser generates one claim-summary PDF and manually emails it to the
+    seeded Financial Institution through MailHog.
+12. Every user message, system event, selected date, provider choice, report,
+    email, decision, and charge is timestamped in one Product activity timeline.
 
 `Admin` in demo language means the authenticated `Adviser`; do not add another
 role. Assessors, repairers, and Financial Institutions remain seeded external
@@ -53,12 +60,31 @@ short-lived development bearer token containing the identity and role. Keep
 self-registration disabled. Treat this as demo infrastructure only; production
 identity management is deferred.
 
+## Adviser experience
+
+The shared header is the only place that shows the signed-in name and
+`Adviser` role. The Adviser dashboard is a simple `Your clients` inbox; do not
+add separate Claim review, notification, or reminder sections.
+
+Sort assigned Clients by their latest user or system activity, newest first,
+with Client name as the stable tie-breaker. Show an unread message icon/count
+and open the selected Client view focused on chat.
+
+Treat chat as the complete activity stream. Merge Client and Adviser messages,
+claim events, reminders, and successfully sent emails by timestamp. Render the
+stream oldest-to-newest and scroll to the latest event by default. Opening a
+conversation marks its unread messages as read. The latest delivered reminder
+email is represented by its sent-email system activity, not a separate table.
+
 Seed provider records for:
 
 - Financial Adviser
 - Financial Institution
 - Assessor
 - Repairer
+
+Keep at least three available seeded Assessors and three available seeded
+Repairers so the claim shortlists can be demonstrated without external APIs.
 
 Each provider has a name, provider type, services, rating, location, and
 availability. Financial Institutions also have seeded products such as
@@ -82,8 +108,10 @@ Ranking order:
 2. distance, nearest first when relevant;
 3. provider name or ID as a stable tie-breaker.
 
-Return at most two recommendations. Do not add AI, embeddings, RAG, or complex
-recommendation algorithms for this hackathon.
+Return at most two recommendations for the general matching API. The claim
+workflow is the one explicit exception: its deterministic Assessor and Repairer
+shortlists contain three seeded candidates. Do not add AI, embeddings, RAG, or
+complex recommendation algorithms for this hackathon.
 
 ## Implementation boundaries
 
@@ -94,6 +122,8 @@ recommendation algorithms for this hackathon.
   choices. Keep current database identifiers stable until the JSON-driven
   product-model migration ticket is implemented.
 - Use additive SQL migrations and deterministic seed data.
+- Keep the transaction charge as one idempotent demo record and Adviser-only
+  system activity. Do not add a payment provider or charge the Client.
 - Keep the seeded demo-user JSON as the PoC source of truth for `client` and
   `adviser` roles, and validate backend-signed tokens on every protected route.
 - Enforce Client ownership and Adviser assignment in backend queries.
@@ -106,7 +136,7 @@ recommendation algorithms for this hackathon.
 ## Deferred work
 
 Do not implement provider self-registration, provider dashboards, Financial
-Institution product management, real provider APIs, payments, transaction-fee
+Institution product management, real provider APIs, real payments or fee
 collection, AI matching, advanced recommendation logic, multiple tenancy, real
 scheduling, production identity management, or production claim integrations
 during the hackathon.
