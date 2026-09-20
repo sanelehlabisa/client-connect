@@ -72,7 +72,6 @@
         "${CLIENTCONNECT_FRONTEND_URL}"
       ],
       "attributes": {
-        "pkce.code.challenge.method": "S256",
         "post.logout.redirect.uris": "${CLIENTCONNECT_FRONTEND_URL}/*"
       },
       "protocolMappers": [

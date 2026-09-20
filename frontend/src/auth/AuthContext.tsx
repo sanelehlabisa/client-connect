@@ -38,9 +38,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     async function initialize(): Promise<void> {
       try {
+        // SHA-256 PKCE needs Web Crypto, which browsers withhold on plain HTTP
+        // LAN origins. Keep PKCE everywhere a secure browser context exists.
+        const pkceMethod = window.isSecureContext ? "S256" : false;
         const isAuthenticated = await keycloak.init({
           onLoad: "check-sso",
-          pkceMethod: "S256",
+          pkceMethod,
           checkLoginIframe: false,
         });
         if (isMounted) {

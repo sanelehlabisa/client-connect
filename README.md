@@ -68,6 +68,10 @@ The frontend, API, and Keycloak are available to devices on the same network.
 If another device cannot connect, allow ports `5173`, `8000`, and `8080` on the
 host's private-network firewall. PostgreSQL remains bound to the host only.
 
+The HTTP LAN demo disables PKCE only when the browser reports an insecure
+context because Web Crypto is unavailable there. Keep this setup on a trusted
+development network; a production deployment must use HTTPS and S256 PKCE.
+
 Keycloak imports the LAN URLs only when it creates the realm. If an older
 development volume already exists, recreate the development volumes before
 testing this change; doing so deletes existing development data and restores

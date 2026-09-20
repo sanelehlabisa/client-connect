@@ -95,7 +95,6 @@ services:
       KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak_dev_password}
       KC_HTTP_ENABLED: "true"
       KC_HOSTNAME: http://${APP_HOST:?Set APP_HOST in .env}:8080
-      KC_HOSTNAME_STRICT: "false"
       CLIENTCONNECT_FRONTEND_URL: http://${APP_HOST:?Set APP_HOST in .env}:5173
     ports:
       - "8080:8080"
