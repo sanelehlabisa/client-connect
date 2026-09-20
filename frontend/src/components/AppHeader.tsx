@@ -21,7 +21,7 @@ export function AppHeader({ backLabel, backTo }: AppHeaderProps) {
           </Button>
         )}
         <Typography color="primary" fontWeight={700} sx={{ flexGrow: 1 }}>
-          RSF ClientConnect
+          ClientConnect
         </Typography>
         <Button component={Link} to="/notifications">
           Notifications

@@ -1,31 +1,39 @@
-# RSF ClientConnect
+# ClientConnect
 
-A small one-day proof of concept for a Client and Adviser financial-product workflow.
+ClientConnect is a hackathon proof of concept that connects individual Clients
+with financial-service providers and keeps the resulting work in one shared
+workflow.
+
+The current application includes financial dashboards, product tracking,
+Client-Adviser chat, notifications, claims, reminders, and service requests.
+The refocused demo adds a seeded provider marketplace whose first priority is
+matching a Client with a Financial Adviser and continuing in the existing chat.
+
+See [AGENTS.md](AGENTS.md) for the product and engineering guardrails and
+[TASKS.md](TASKS.md) for the prioritized backlog.
 
 ## Technology
 
-- frontend/: React, TypeScript, Vite, and Material UI
-- backend/: Python, FastAPI, SQLAlchemy, and Psycopg
-- database/: PostgreSQL with a simple development schema and seed
-- keycloak/: Realm, clients, roles, group, and development users
-- Authentication: Keycloak with OpenID Connect and PKCE
-- Email: MailHog
-- Local runtime: Docker Compose
+- React, TypeScript, Vite, and Material UI
+- Python, FastAPI, SQLAlchemy, and Psycopg
+- PostgreSQL
+- Keycloak with OpenID Connect and PKCE
+- MailHog development email
+- Docker Compose local runtime
 
-The interface uses a simple white-and-blue Material UI theme. Backend functions use type hints and docstrings, and the code favors explicit names and small modules so it remains junior-friendly.
+The interface uses a simple white-and-blue theme. Backend functions use type
+hints and docstrings, and the code favors explicit, junior-friendly modules.
 
-## Structure
+## Project structure
 
 ~~~text
-backend/
-  app/          FastAPI application code
-database/
-  init/         PostgreSQL schema and deterministic demo seed
-frontend/
-  src/          React application and Material UI theme
-keycloak/
-  realm/        Importable development realm JSON
-dev.docker-compose.yaml    Local development environment
+backend/                     FastAPI application
+database/init/               PostgreSQL schema, migrations, and demo seed
+frontend/src/                React application
+keycloak/realm/              Importable development realm
+AGENTS.md                    Product and implementation guardrails
+TASKS.md                     Ordered hackathon backlog
+dev.docker-compose.yaml      Local development environment
 ~~~
 
 ## Start development
@@ -36,7 +44,7 @@ dev.docker-compose.yaml    Local development environment
    Copy-Item .env.example .env
    ~~~
 
-2. Build and start all services:
+2. Build and start the services:
 
    ~~~powershell
    docker compose -f dev.docker-compose.yaml up --build
@@ -48,60 +56,34 @@ dev.docker-compose.yaml    Local development environment
    - Backend health: http://localhost:8000/health
    - FastAPI docs: http://localhost:8000/docs
    - Keycloak: http://localhost:8080
-   - Keycloak administration: http://localhost:8080/admin
    - MailHog: http://localhost:8025
 
-Source directories are mounted into the containers. Vite refreshes React changes, and Uvicorn reloads FastAPI changes automatically.
+Source directories are mounted into the containers, so Vite and Uvicorn reload
+application changes automatically.
 
-## Development authentication
-
-Keycloak imports `keycloak/realm/rsf-clientconnect-realm.json` the first time its development database starts.
+## Development accounts
 
 | Account | Username | Password | Access |
 | --- | --- | --- | --- |
 | Client | `thabo.mokoena` | `Client123!` | `client` role |
-| Adviser | `amina.daniels` | `Adviser123!` | Member of `advisers`; receives `adviser` role |
-| Keycloak administrator | `admin` | `admin` | Development administration only |
+| Adviser | `amina.daniels` | `Adviser123!` | Seeded Royal Square Adviser |
+| Keycloak administrator | `admin` | `admin` | Development only |
 
-Self-registration is enabled. Every new account receives the `client` realm role. Adviser access cannot be selected during registration; a Keycloak administrator must add the user to the `advisers` group.
+Self-registration grants the `client` role. Adviser access remains controlled
+through the Keycloak `advisers` group. These credentials and the imported realm
+are development data only.
 
-The React app uses the public `rsf-frontend` client with Authorization Code flow and PKCE. FastAPI validates the token issuer, signature, expiry, and `rsf-api` audience before trusting its realm roles.
+## Compatibility note
 
-The imported users and passwords are development data only. Do not use this realm file or these credentials in production. Keycloak skips startup import when the realm already exists, so realm JSON changes require a fresh Keycloak development database or a manual administration change.
-
-## Protected financial API
-
-- `GET /clients` lists assigned clients and requires the `adviser` role.
-- `GET /clients/{client_id}` returns the shared financial overview.
-- Clients can only retrieve their own record.
-- Advisers can only retrieve records assigned to their Keycloak identity.
-- Inaccessible client records return `404` so their existence is not disclosed.
-
-Both endpoints require a Keycloak bearer token. Application users are matched to the trusted email claim in that token.
-Roles are not duplicated in the application database; Keycloak remains their source of truth.
-
-## Protected insurance workflow API
-
-- `POST /clients/{client_id}/insurance-requests` lets a Client submit a request for their own Insurance product.
-- `GET /clients/{client_id}/insurance-requests` shows request history to the owning Client or assigned Adviser.
-- `GET /insurance-requests` lists the assigned Adviser's active review queue.
-- `PATCH /insurance-requests/{request_id}` requires the `adviser` role and updates a request status.
-- Statuses must follow `Submitted` → `Under Review` → `Approved`, `Changes Required`, or `Rejected`.
-- A Client token cannot call review or approval routes.
+Some internal database, Keycloak, and Docker identifiers still use `rsf-*` so
+the existing development environment and tokens continue to work. The product
+and repository name is ClientConnect; those internal identifiers can be
+migrated after the hackathon demo.
 
 ## Common commands
 
 ~~~powershell
-# Stop the environment
-docker compose -f dev.docker-compose.yaml down
-
-# Rebuild after dependency changes
 docker compose -f dev.docker-compose.yaml up --build
-
-# Follow application logs
 docker compose -f dev.docker-compose.yaml logs --follow frontend backend keycloak
+docker compose -f dev.docker-compose.yaml down
 ~~~
-
-## Scope
-
-See [TASKS.md](TASKS.md). Complete the Insurance submission and approval demo before adding deferred features.

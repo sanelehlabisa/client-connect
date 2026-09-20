@@ -8,7 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Configuration shared by the API and its supporting services."""
 
-    app_name: str = "RSF ClientConnect API"
+    app_name: str = "ClientConnect API"
     database_url: str = (
         "postgresql+psycopg://rsf:rsf_dev_password@database:5432/rsf"
     )

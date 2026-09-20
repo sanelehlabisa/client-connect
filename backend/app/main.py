@@ -1,4 +1,4 @@
-"""FastAPI entry point for RSF ClientConnect."""
+"""FastAPI entry point for ClientConnect."""
 
 import asyncio
 import logging
@@ -83,7 +83,7 @@ class RootResponse(BaseModel):
 def read_root() -> RootResponse:
     """Return a friendly message from the API root."""
 
-    return RootResponse(message="RSF ClientConnect API is running.")
+    return RootResponse(message="ClientConnect API is running.")
 
 
 @app.get("/health", response_model=HealthResponse)

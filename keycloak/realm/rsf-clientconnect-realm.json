@@ -1,6 +1,6 @@
 {
   "realm": "rsf-clientconnect",
-  "displayName": "RSF ClientConnect",
+  "displayName": "ClientConnect",
   "enabled": true,
   "registrationAllowed": true,
   "registrationEmailAsUsername": false,
@@ -26,7 +26,7 @@
       },
       {
         "name": "default-roles-rsf-clientconnect",
-        "description": "Default role granted to every RSF ClientConnect user",
+        "description": "Default role granted to every ClientConnect user",
         "composite": true,
         "composites": {
           "realm": [
@@ -39,7 +39,7 @@
   },
   "defaultRole": {
     "name": "default-roles-rsf-clientconnect",
-    "description": "Default role granted to every RSF ClientConnect user",
+    "description": "Default role granted to every ClientConnect user",
     "composite": true,
     "clientRole": false
   },
@@ -56,7 +56,7 @@
   "clients": [
     {
       "clientId": "rsf-frontend",
-      "name": "RSF ClientConnect Frontend",
+      "name": "ClientConnect Frontend",
       "description": "Public React browser client",
       "enabled": true,
       "protocol": "openid-connect",
@@ -99,7 +99,7 @@
     },
     {
       "clientId": "rsf-api",
-      "name": "RSF ClientConnect API",
+      "name": "ClientConnect API",
       "description": "Audience used by FastAPI access tokens",
       "enabled": true,
       "protocol": "openid-connect",
@@ -107,7 +107,7 @@
     },
     {
       "clientId": "rsf-test-cli",
-      "name": "RSF Development Test CLI",
+      "name": "ClientConnect Development Test CLI",
       "description": "Development-only client used to verify seeded accounts",
       "enabled": true,
       "protocol": "openid-connect",

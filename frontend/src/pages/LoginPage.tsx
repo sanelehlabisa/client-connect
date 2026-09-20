@@ -30,7 +30,7 @@ export function LoginPage() {
         <Stack spacing={4}>
           <Box textAlign="center">
             <Typography color="primary" fontWeight={700} gutterBottom>
-              RSF ClientConnect
+              ClientConnect
             </Typography>
             <Typography component="h1" variant="h1" gutterBottom>
               Your finances and adviser, in one place.

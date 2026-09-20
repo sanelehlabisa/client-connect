@@ -120,7 +120,7 @@ def deliver_due_reminders(session: Session) -> ReminderDeliverySummary:
                         f"Hello {recipient_name},\n\n"
                         f"{row.title} for {row.client_name} is due on "
                         f"{formatted_date}.\n\n"
-                        "Sign in to RSF ClientConnect to view your reminders."
+                        "Sign in to ClientConnect to view your reminders."
                     ),
                 )
                 for _user_id, recipient_name, recipient_email in recipients

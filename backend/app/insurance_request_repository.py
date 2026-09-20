@@ -281,7 +281,7 @@ def create_insurance_request(
             f"{request.client_name} submitted a claim for "
             f"{request.product_name}.\n"
             f"Provider reference: {request.provider_claim_number}.\n\n"
-            "Sign in to RSF ClientConnect to review it."
+            "Sign in to ClientConnect to review it."
         ),
     )
     return request
@@ -494,7 +494,7 @@ def update_insurance_request_status(
             subject=notification_title,
             body=(
                 f"{formatted_message}\n\n"
-                "Sign in to RSF ClientConnect to view your claim."
+                "Sign in to ClientConnect to view your claim."
             ),
         )
     return request

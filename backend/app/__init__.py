@@ -1,1 +1,1 @@
-"""RSF ClientConnect backend package."""
+"""ClientConnect backend package."""
