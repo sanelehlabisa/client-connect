@@ -5,10 +5,13 @@ import { useAuth } from "../auth/AuthContext";
 import { AppHeader } from "../components/AppHeader";
 import { ClientOverviewPanel } from "../components/ClientOverviewPanel";
 
-/** Show an owned or assigned Client through the shared financial view. */
+/** Show an owned or assigned Client and optional Product-by-ID detail. */
 export function ClientPage() {
   const auth = useAuth();
-  const { clientId } = useParams<{ clientId: string }>();
+  const { clientId, productId } = useParams<{
+    clientId: string;
+    productId?: string;
+  }>();
 
   if (!clientId) {
     return <Navigate replace to="/dashboard" />;
@@ -18,16 +21,15 @@ export function ClientPage() {
     <Box component="main" minHeight="100vh">
       <AppHeader
         backLabel={
-          auth.roles.includes("adviser")
-            ? "Back to clients"
-            : "Back to dashboard"
+          auth.roles.includes("adviser") ? "Back to clients" : undefined
         }
-        backTo="/dashboard"
+        backTo={auth.roles.includes("adviser") ? "/dashboard" : undefined}
       />
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         <ClientOverviewPanel
           clientId={clientId}
           getAccessToken={auth.getAccessToken}
+          productId={productId}
         />
       </Container>
     </Box>

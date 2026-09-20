@@ -13,23 +13,26 @@ The relationship is:
 
 `ClientConnect -> Clients -> matched service providers`
 
-The current PoC already includes a Client financial dashboard, an Adviser
-dashboard, products, chat, notifications, claims, reminders, and service
-requests. Preserve these working features while refocusing the demo.
+The current PoC already includes a Client page, an Adviser dashboard, products,
+chat, notifications, claims, reminders, service requests, and deterministic
+provider matching. Preserve the backend capabilities while keeping the primary
+Client experience intentionally small.
 
 ## Hackathon priority
 
-The must-win demo is Adviser discovery and communication:
+The must-win demo is the Client-by-ID page and Adviser communication:
 
-1. A Client logs in and selects **Get Financial Advice**.
-2. ClientConnect returns the best two matching seeded Advisers.
-3. The results include the seeded Royal Square Adviser.
-4. The Client selects an Adviser.
-5. The existing conversation opens and the Client sends a message.
-6. The Adviser logs in, sees the Client and message, and replies.
+1. A Client logs in and sees a compact financial-position grid.
+2. The Client sees an active-products table and can open a Product-by-ID URL.
+3. **Get Financial Advice** scrolls directly to the assigned-Adviser chat.
+4. Automatic reminders appear as system items inside that conversation.
+5. The Client sends a message.
+6. The Adviser opens the Client-by-ID page, sees the message, and replies.
 7. The Client receives a notification and sees the reply.
 
-Finish and polish this flow before optional provider matching in claims.
+The two-result provider-matching API and seed data remain available, but the
+primary Client page does not need an Adviser-selection modal. Finish and polish
+the direct communication flow before optional provider matching in claims.
 
 ## Roles and provider records
 

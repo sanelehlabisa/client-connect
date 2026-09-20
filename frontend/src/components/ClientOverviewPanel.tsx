@@ -15,6 +15,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
 
 import {
   getClientOverview,
@@ -24,20 +25,18 @@ import {
 } from "../api/clients";
 import { useAuth } from "../auth/AuthContext";
 import { AccidentReportDialog } from "./AccidentReportDialog";
-import { AdviserMatchDialog } from "./AdviserMatchDialog";
 import { AddGoalDialog } from "./AddGoalDialog";
 import { AddInsuranceDialog } from "./AddInsuranceDialog";
 import { AddInvestmentDialog } from "./AddInvestmentDialog";
 import { ArchiveInsuranceDialog } from "./ArchiveInsuranceDialog";
-import { ClaimProgressPanel } from "./ClaimProgressPanel";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
 import { RemoveProductDialog } from "./RemoveProductDialog";
-import { ServiceRequestsPanel } from "./ServiceRequestsPanel";
 import { ChatPanel } from "./ChatPanel";
 
 type ClientOverviewPanelProps = {
   clientId?: string;
   getAccessToken: () => Promise<string | undefined>;
+  productId?: string;
 };
 
 const randCurrency = new Intl.NumberFormat("en-ZA", {
@@ -99,12 +98,13 @@ function productTypeLabel(product: Product): string {
 export function ClientOverviewPanel({
   clientId,
   getAccessToken,
+  productId,
 }: ClientOverviewPanelProps) {
   const auth = useAuth();
+  const navigate = useNavigate();
   const [overview, setOverview] = useState<ClientOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [productToRemove, setProductToRemove] = useState<Product | null>(null);
   const [insuranceToArchive, setInsuranceToArchive] =
     useState<Product | null>(null);
@@ -112,7 +112,6 @@ export function ClientOverviewPanel({
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
   const [insuranceDialogOpen, setInsuranceDialogOpen] = useState(false);
   const [investmentDialogOpen, setInvestmentDialogOpen] = useState(false);
-  const [adviserDialogOpen, setAdviserDialogOpen] = useState(false);
   const chatSection = useRef<HTMLDivElement | null>(null);
   const isAdviser = auth.roles.includes("adviser");
 
@@ -169,6 +168,11 @@ export function ClientOverviewPanel({
   }
 
   const position = overview.financial_position;
+  const routedProduct = productId
+    ? [...overview.products, ...overview.archived_products].find(
+        (product) => product.id === productId,
+      ) ?? null
+    : null;
   const financialCards = [
     ["Assets", position.assets],
     ["Liabilities", position.liabilities],
@@ -176,6 +180,12 @@ export function ClientOverviewPanel({
     ["Monthly income", position.monthly_income],
     ["Monthly expenses", position.monthly_expenses],
   ] as const;
+
+  function closeProductRoute(): void {
+    if (productId) {
+      navigate(`/clients/${overview.id}`);
+    }
+  }
 
   return (
     <Stack spacing={4}>
@@ -204,11 +214,13 @@ export function ClientOverviewPanel({
               Need help with your financial plan?
             </Typography>
             <Typography color="text.secondary">
-              Compare two matched Advisers and start a private conversation.
+              Go straight to your private conversation with your Adviser.
             </Typography>
           </Box>
           <Button
-            onClick={() => setAdviserDialogOpen(true)}
+            onClick={() =>
+              chatSection.current?.scrollIntoView({ behavior: "smooth" })
+            }
             variant="contained"
           >
             Get Financial Advice
@@ -216,28 +228,52 @@ export function ClientOverviewPanel({
         </Paper>
       )}
 
-      <Box
+      <Paper
+        variant="outlined"
         sx={{
           display: "grid",
-          gap: 2,
+          gap: 0,
           gridTemplateColumns: {
             xs: "1fr",
             sm: "repeat(2, 1fr)",
             lg: "repeat(5, 1fr)",
           },
+          overflow: "hidden",
         }}
       >
-        {financialCards.map(([label, value]) => (
-          <Paper key={label} variant="outlined" sx={{ p: 2.5 }}>
+        {financialCards.map(([label, value], index) => (
+          <Box
+            key={label}
+            sx={{
+              borderLeft: {
+                xs: "none",
+                sm: index % 2 === 0 ? "none" : "1px solid",
+                lg: index === 0 ? "none" : "1px solid",
+              },
+              borderTop: {
+                xs: index === 0 ? "none" : "1px solid",
+                sm: index < 2 ? "none" : "1px solid",
+                lg: "none",
+              },
+              borderColor: "divider",
+              p: 2,
+            }}
+          >
             <Typography color="text.secondary" variant="body2">
               {label}
             </Typography>
-            <Typography fontWeight={700} variant="h6">
+            <Typography fontWeight={700} variant="body1">
               {formatCurrency(value)}
             </Typography>
-          </Paper>
+          </Box>
         ))}
-      </Box>
+      </Paper>
+
+      {productId && !routedProduct && (
+        <Alert severity="warning">
+          This product could not be found for the selected Client.
+        </Alert>
+      )}
 
       <TableContainer component={Paper} variant="outlined">
         <Box
@@ -313,8 +349,9 @@ export function ClientOverviewPanel({
                 </TableCell>
                 <TableCell align="right">
                   <Button
-                    onClick={() => setSelectedProduct(product)}
+                    component={Link}
                     size="small"
+                    to={`/clients/${overview.id}/products/${product.id}`}
                   >
                     View
                   </Button>
@@ -363,8 +400,9 @@ export function ClientOverviewPanel({
                   </TableCell>
                   <TableCell align="right">
                     <Button
-                      onClick={() => setSelectedProduct(product)}
+                      component={Link}
                       size="small"
+                      to={`/clients/${overview.id}/products/${product.id}`}
                     >
                       View
                     </Button>
@@ -375,49 +413,28 @@ export function ClientOverviewPanel({
           </Table>
         </TableContainer>
       )}
-      <ServiceRequestsPanel
-        clientId={overview.id}
-        getAccessToken={getAccessToken}
-      />
-      <ClaimProgressPanel
-        clientId={overview.id}
-        getAccessToken={getAccessToken}
-      />
       <Box ref={chatSection}>
         <ChatPanel
           clientId={overview.id}
           getAccessToken={getAccessToken}
         />
       </Box>
-      <AdviserMatchDialog
-        clientId={overview.id}
-        getAccessToken={getAccessToken}
-        onClose={() => setAdviserDialogOpen(false)}
-        onSelected={() => {
-          setAdviserDialogOpen(false);
-          window.setTimeout(
-            () => chatSection.current?.scrollIntoView({ behavior: "smooth" }),
-            100,
-          );
-        }}
-        open={adviserDialogOpen}
-      />
       <ProductDetailsDialog
         canReportAccident={!isAdviser}
         onArchive={(product) => {
-          setSelectedProduct(null);
+          closeProductRoute();
           setInsuranceToArchive(product);
         }}
-        onClose={() => setSelectedProduct(null)}
+        onClose={closeProductRoute}
         onReportAccident={(product) => {
-          setSelectedProduct(null);
+          closeProductRoute();
           setAccidentProduct(product);
         }}
         onRemove={(product) => {
-          setSelectedProduct(null);
+          closeProductRoute();
           setProductToRemove(product);
         }}
-        product={selectedProduct}
+        product={routedProduct}
       />
       <ArchiveInsuranceDialog
         clientId={overview.id}

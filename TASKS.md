@@ -32,13 +32,13 @@
 - [x] Return no more than the best two matches.
 - [x] Add focused tests for eligibility, ranking, tie-breaking, and the two-result limit.
 
-## 4. P0 - Adviser matching demo
+## 4. P0 - Adviser connection demo
 
 - [x] Add a prominent `Get Financial Advice` action to the Client dashboard.
-- [x] Request and display two recommended Financial Advisers.
-- [x] Show name, services, rating, location, and availability for each recommendation.
-- [x] Let the Client select the seeded Royal Square Adviser.
-- [x] Link the selection to the Client and open the existing conversation.
+- [x] Keep deterministic two-result Adviser matching available in the API.
+- [x] Include the seeded Royal Square Adviser in provider data.
+- [x] Link the Client to the assigned Adviser and existing conversation.
+- [x] Let `Get Financial Advice` open the conversation directly in the simplified UI.
 - [x] Verify the Client message, Adviser reply, and Client notification demo end to end.
 
 ## 5. P1 - Product removal
@@ -48,7 +48,17 @@
 - [x] Hide archived products from active views and keep them available in history.
 - [ ] Notify the Client and Adviser when a product is removed or archived.
 
-## 6. P1 - Automatic Adviser task recommendations
+## 6. P1 - Simplified Client page
+
+- [x] Show the signed-in user's full name and role beside Log out.
+- [x] Use canonical Client-by-ID and Product-by-ID routes.
+- [x] Present the financial position as one compact label-and-value grid.
+- [x] Keep the Client page focused on financial position, products, and chat.
+- [x] Send `Get Financial Advice` directly to the Adviser conversation.
+- [x] Show active automatic reminders inside the conversation instead of a separate table.
+- [ ] Link messages and activity to a Product so Product-by-ID can show a filtered interaction timeline.
+
+## 7. P1 - Automatic Adviser task recommendations
 
 - [ ] Generate simple, deterministic recommended tasks from Client products and requests.
 - [ ] Deduplicate recommendations so the Adviser is not repeatedly notified.
@@ -56,13 +66,13 @@
 - [ ] Show a non-blocking popup when a new recommendation arrives in ClientConnect.
 - [ ] Let the Adviser open the Client or create a reminder from the recommendation.
 
-## 7. P1 - Seeded financial-product discovery
+## 8. P1 - Seeded financial-product discovery
 
 - [ ] Show selected seeded Financial Institution products to Clients.
 - [ ] Display provider, product name, product type, and basic information.
 - [ ] Keep product publishing and Financial Institution accounts deferred.
 
-## 8. P2 - Optional claim-provider matching
+## 9. P2 - Optional claim-provider matching
 
 Start only after the Adviser matching demo is complete.
 
@@ -71,12 +81,11 @@ Start only after the Adviser matching demo is complete.
 - [ ] Show two recommendations and store the selected provider on the claim.
 - [ ] Continue the existing claim workflow after selection.
 
-## 9. Demo acceptance
+## 10. Demo acceptance
 
 - [x] Client logs in and sees their financial dashboard.
-- [x] Client selects `Get Financial Advice` and receives two recommendations.
-- [x] Results include the seeded Royal Square Adviser.
-- [x] Client selects the Adviser and sends a message in the existing chat.
+- [x] Client selects `Get Financial Advice` and reaches the Adviser conversation.
+- [x] Client sends a message in the existing chat.
 - [x] Adviser logs in, sees the Client and message, and replies.
 - [x] Client receives a notification and sees the response.
 - [x] Fix demo blockers and stop before deferred work.

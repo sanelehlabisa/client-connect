@@ -10,11 +10,8 @@ import {
   Typography,
 } from "@mui/material";
 
-import {
-  getMessages,
-  sendMessage,
-  type ChatMessage,
-} from "../api/messages";
+import { getMessages, sendMessage, type ChatMessage } from "../api/messages";
+import { getReminders, type Reminder } from "../api/reminders";
 import { useAuth } from "../auth/AuthContext";
 
 type ChatPanelProps = {
@@ -29,10 +26,17 @@ const messageTime = new Intl.DateTimeFormat("en-ZA", {
   minute: "2-digit",
 });
 
+const reminderDate = new Intl.DateTimeFormat("en-ZA", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
+
 /** Provide the persistent text channel for a Client and assigned Adviser. */
 export function ChatPanel({ clientId, getAccessToken }: ChatPanelProps) {
   const auth = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [reminders, setReminders] = useState<Reminder[]>([]);
   const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -53,12 +57,17 @@ export function ChatPanel({ clientId, getAccessToken }: ChatPanelProps) {
           throw new Error("A valid access token is required.");
         }
 
-        const conversation = await getMessages(
-          accessToken,
-          clientId,
-          controller.signal,
-        );
+        const [conversation, availableReminders] = await Promise.all([
+          getMessages(accessToken, clientId, controller.signal),
+          getReminders(accessToken, controller.signal),
+        ]);
         setMessages(conversation);
+        setReminders(
+          availableReminders.filter(
+            (reminder) =>
+              reminder.client_id === clientId && !reminder.is_completed,
+          ),
+        );
         setError(false);
       } catch (requestError: unknown) {
         if (
@@ -128,7 +137,8 @@ export function ChatPanel({ clientId, getAccessToken }: ChatPanelProps) {
       <Stack spacing={2}>
         <Box>
           <Typography component="h2" fontWeight={700} variant="h6">
-            Chat with your {auth.roles.includes("adviser") ? "client" : "adviser"}
+            Chat with your{" "}
+            {auth.roles.includes("adviser") ? "client" : "adviser"}
           </Typography>
           <Typography color="text.secondary" variant="body2">
             Messages are shared only with this Client and assigned Adviser.
@@ -156,7 +166,7 @@ export function ChatPanel({ clientId, getAccessToken }: ChatPanelProps) {
             <Stack alignItems="center" justifyContent="center" minHeight={140}>
               <CircularProgress size={30} />
             </Stack>
-          ) : messages.length === 0 ? (
+          ) : messages.length === 0 && reminders.length === 0 ? (
             <Stack alignItems="center" justifyContent="center" minHeight={140}>
               <Typography color="text.secondary">
                 No messages yet. Start the conversation below.
@@ -164,6 +174,33 @@ export function ChatPanel({ clientId, getAccessToken }: ChatPanelProps) {
             </Stack>
           ) : (
             <Stack spacing={1.5}>
+              {reminders.map((reminder) => (
+                <Box
+                  key={`reminder-${reminder.id}`}
+                  sx={{
+                    alignSelf: "center",
+                    bgcolor: "#fff8e1",
+                    border: "1px solid",
+                    borderColor: "warning.light",
+                    borderRadius: 2,
+                    maxWidth: "90%",
+                    px: 2,
+                    py: 1,
+                    textAlign: "center",
+                  }}
+                >
+                  <Typography fontWeight={700} variant="caption">
+                    Reminder
+                  </Typography>
+                  <Typography variant="body2">{reminder.title}</Typography>
+                  <Typography color="text.secondary" variant="caption">
+                    Due{" "}
+                    {reminderDate.format(
+                      new Date(`${reminder.due_date}T00:00:00`),
+                    )}
+                  </Typography>
+                </Box>
+              ))}
               {messages.map((message) => (
                 <Box
                   key={message.id}
@@ -202,7 +239,11 @@ export function ChatPanel({ clientId, getAccessToken }: ChatPanelProps) {
         </Box>
 
         <Box component="form" onSubmit={(event) => void handleSubmit(event)}>
-          <Stack alignItems="flex-end" direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+          <Stack
+            alignItems="flex-end"
+            direction={{ xs: "column", sm: "row" }}
+            spacing={1.5}
+          >
             <TextField
               disabled={sending}
               fullWidth

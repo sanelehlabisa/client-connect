@@ -6,19 +6,23 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { Navigate } from "react-router-dom";
 
 import { useAuth } from "../auth/AuthContext";
 import { AssignedClientsTable } from "../components/AssignedClientsTable";
 import { AppHeader } from "../components/AppHeader";
 import { ClientOverviewPanel } from "../components/ClientOverviewPanel";
 import { InsuranceReviewQueue } from "../components/InsuranceReviewQueue";
-import { RemindersPanel } from "../components/RemindersPanel";
 
 /** Show the correct dashboard shell for the authenticated Keycloak role. */
 export function DashboardPage() {
   const auth = useAuth();
   const isAdviser = auth.roles.includes("adviser");
   const isClient = auth.roles.includes("client");
+
+  if (isClient && !isAdviser) {
+    return <Navigate replace to="/clients/me" />;
+  }
 
   return (
     <Box component="main" minHeight="100vh">
@@ -50,13 +54,9 @@ export function DashboardPage() {
               <>
                 <AssignedClientsTable getAccessToken={auth.getAccessToken} />
                 <InsuranceReviewQueue getAccessToken={auth.getAccessToken} />
-                <RemindersPanel getAccessToken={auth.getAccessToken} />
               </>
             ) : (
-              <>
-                <ClientOverviewPanel getAccessToken={auth.getAccessToken} />
-                <RemindersPanel getAccessToken={auth.getAccessToken} />
-              </>
+              <ClientOverviewPanel getAccessToken={auth.getAccessToken} />
             )}
           </Stack>
         )}

@@ -319,7 +319,7 @@ export function AssignedClientsTable({
                     <Button
                       component={Link}
                       size="small"
-                      to={`/client/${client.id}`}
+                      to={`/clients/${client.id}`}
                     >
                       Open
                     </Button>

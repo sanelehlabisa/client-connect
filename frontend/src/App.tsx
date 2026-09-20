@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
 import { useAuth } from "./auth/AuthContext";
 import { ClientPage } from "./pages/ClientPage";
@@ -16,7 +16,23 @@ function HomeRedirect() {
     return <LoadingPage />;
   }
 
-  return <Navigate replace to={auth.authenticated ? "/dashboard" : "/login"} />;
+  const homePath = auth.roles.includes("adviser")
+    ? "/dashboard"
+    : auth.roles.includes("client")
+      ? "/clients/me"
+      : "/dashboard";
+  return <Navigate replace to={auth.authenticated ? homePath : "/login"} />;
+}
+
+/** Keep old proof-of-concept Client links working after the route rename. */
+function LegacyClientRedirect() {
+  const { clientId } = useParams<{ clientId: string }>();
+  return (
+    <Navigate
+      replace
+      to={clientId ? `/clients/${clientId}` : "/dashboard"}
+    />
+  );
 }
 
 /** Require a valid Keycloak session before rendering a private page. */
@@ -60,6 +76,22 @@ export default function App() {
         element={
           <ProtectedRoute>
             <ClientPage />
+          </ProtectedRoute>
+        }
+        path="/clients/:clientId"
+      />
+      <Route
+        element={
+          <ProtectedRoute>
+            <ClientPage />
+          </ProtectedRoute>
+        }
+        path="/clients/:clientId/products/:productId"
+      />
+      <Route
+        element={
+          <ProtectedRoute>
+            <LegacyClientRedirect />
           </ProtectedRoute>
         }
         path="/client/:clientId"
