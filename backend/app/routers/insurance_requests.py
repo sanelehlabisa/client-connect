@@ -192,6 +192,7 @@ def close_client_insurance_request(
             request_id=request_id,
             client_email=require_email(client),
             review=close_data.review,
+            provider_rating=close_data.provider_rating,
         )
     except ClaimNotReadyToCloseError as error:
         raise HTTPException(

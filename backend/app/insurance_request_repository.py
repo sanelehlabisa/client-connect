@@ -113,6 +113,7 @@ def _insurance_request(row: Any) -> InsuranceRequest:
         progress_stage=row.progress_stage,
         progress_updated_at=row.progress_updated_at,
         client_review=row.client_review,
+        provider_rating=row.provider_rating,
         closed_at=row.closed_at,
         created_at=row.created_at,
     )
@@ -138,6 +139,7 @@ def _find_request(session: Session, request_id: str) -> InsuranceRequest:
                 insurance_requests.progress_stage,
                 insurance_requests.progress_updated_at,
                 insurance_requests.client_review,
+                insurance_requests.provider_rating,
                 insurance_requests.closed_at,
                 insurance_requests.created_at
             FROM insurance_requests
@@ -334,6 +336,7 @@ def list_client_insurance_requests(
                 insurance_requests.progress_stage,
                 insurance_requests.progress_updated_at,
                 insurance_requests.client_review,
+                insurance_requests.provider_rating,
                 insurance_requests.closed_at,
                 insurance_requests.created_at
             FROM insurance_requests
@@ -372,6 +375,7 @@ def list_adviser_review_queue(
                 insurance_requests.progress_stage,
                 insurance_requests.progress_updated_at,
                 insurance_requests.client_review,
+                insurance_requests.provider_rating,
                 insurance_requests.closed_at,
                 insurance_requests.created_at
             FROM insurance_requests
@@ -587,6 +591,7 @@ def close_insurance_request(
     request_id: str,
     client_email: str,
     review: str,
+    provider_rating: int,
 ) -> InsuranceRequest | None:
     """Close a ready claim only when it belongs to the authenticated Client."""
 
@@ -620,11 +625,16 @@ def close_insurance_request(
                 progress_stage = 'Closed',
                 progress_updated_at = CURRENT_TIMESTAMP,
                 client_review = :review,
+                provider_rating = :provider_rating,
                 closed_at = CURRENT_TIMESTAMP
             WHERE id = :request_id
             """
         ),
-        {"request_id": request_id, "review": review},
+        {
+            "request_id": request_id,
+            "review": review,
+            "provider_rating": provider_rating,
+        },
     )
     request = _find_request(session, request_id)
     session.execute(
@@ -657,6 +667,7 @@ def close_insurance_request(
             "title": f"Claim closed by {request.client_name}",
             "message": (
                 f"{request.client_name} closed the {request.product_name} claim. "
+                f"Provider rating: {provider_rating}/5. "
                 f'Review: "{review}"'
             ),
         },

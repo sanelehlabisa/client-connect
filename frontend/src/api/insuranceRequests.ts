@@ -28,6 +28,7 @@ export type InsuranceRequest = {
   progress_stage: InsuranceRequestProgressStage;
   progress_updated_at: string;
   client_review: string | null;
+  provider_rating: number | null;
   closed_at: string | null;
   created_at: string;
 };
@@ -177,6 +178,7 @@ export async function closeInsuranceRequest(
   accessToken: string,
   requestId: string,
   review: string,
+  providerRating: number,
 ): Promise<InsuranceRequest> {
   const response = await fetch(
     `${apiUrl}/insurance-requests/${requestId}/close`,
@@ -186,7 +188,7 @@ export async function closeInsuranceRequest(
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ review }),
+      body: JSON.stringify({ review, provider_rating: providerRating }),
     },
   );
 

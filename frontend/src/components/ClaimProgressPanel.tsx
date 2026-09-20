@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogTitle,
   Paper,
+  Rating,
   Stack,
   Table,
   TableBody,
@@ -64,6 +65,7 @@ export function ClaimProgressPanel({
   const [closingRequest, setClosingRequest] =
     useState<InsuranceRequest | null>(null);
   const [review, setReview] = useState("");
+  const [providerRating, setProviderRating] = useState(0);
   const isAdviser = auth.roles.includes("adviser");
 
   useEffect(() => {
@@ -134,7 +136,7 @@ export function ClaimProgressPanel({
 
   async function handleCloseClaim(): Promise<void> {
     const cleanReview = review.trim();
-    if (!closingRequest || cleanReview.length < 2) {
+    if (!closingRequest || cleanReview.length < 2 || providerRating === 0) {
       return;
     }
 
@@ -149,12 +151,14 @@ export function ClaimProgressPanel({
         accessToken,
         closingRequest.id,
         cleanReview,
+        providerRating,
       );
       setRequests((current) =>
         current.map((item) => (item.id === updated.id ? updated : item)),
       );
       setClosingRequest(null);
       setReview("");
+      setProviderRating(0);
     } catch (requestError: unknown) {
       setErrorMessage(
         requestError instanceof Error
@@ -201,7 +205,7 @@ export function ClaimProgressPanel({
             <TableCell>Review</TableCell>
             <TableCell>Progress</TableCell>
             <TableCell>Updated</TableCell>
-            <TableCell>Client review</TableCell>
+            <TableCell>Client feedback</TableCell>
             <TableCell align="right">Next action</TableCell>
           </TableRow>
         </TableHead>
@@ -239,7 +243,30 @@ export function ClaimProgressPanel({
                 <TableCell>
                   {dateTime.format(new Date(request.progress_updated_at))}
                 </TableCell>
-                <TableCell>{request.client_review ?? "—"}</TableCell>
+                <TableCell>
+                  {request.provider_rating !== null || request.client_review ? (
+                    <Stack spacing={0.5}>
+                      {request.provider_rating !== null ? (
+                        <Rating
+                          readOnly
+                          size="small"
+                          value={request.provider_rating}
+                        />
+                      ) : (
+                        <Typography color="text.secondary" variant="caption">
+                          Not rated
+                        </Typography>
+                      )}
+                      {request.client_review && (
+                        <Typography variant="body2">
+                          {request.client_review}
+                        </Typography>
+                      )}
+                    </Stack>
+                  ) : (
+                    "—"
+                  )}
+                </TableCell>
                 <TableCell align="right">
                   {canAdvance && (
                     <Button
@@ -287,6 +314,7 @@ export function ClaimProgressPanel({
           if (updatingId === null) {
             setClosingRequest(null);
             setReview("");
+            setProviderRating(0);
           }
         }}
         open={closingRequest !== null}
@@ -297,6 +325,16 @@ export function ClaimProgressPanel({
             Confirm that the claim is complete and leave a short review for
             your Adviser.
           </Typography>
+          <Typography component="label" display="block" variant="body2">
+            Provider rating
+          </Typography>
+          <Rating
+            aria-label="Provider rating"
+            name="provider-rating"
+            onChange={(_event, value) => setProviderRating(value ?? 0)}
+            sx={{ mb: 2 }}
+            value={providerRating}
+          />
           <TextField
             autoFocus
             fullWidth
@@ -315,12 +353,17 @@ export function ClaimProgressPanel({
             onClick={() => {
               setClosingRequest(null);
               setReview("");
+              setProviderRating(0);
             }}
           >
             Cancel
           </Button>
           <Button
-            disabled={review.trim().length < 2 || updatingId !== null}
+            disabled={
+              review.trim().length < 2 ||
+              providerRating === 0 ||
+              updatingId !== null
+            }
             onClick={() => void handleCloseClaim()}
             variant="contained"
           >

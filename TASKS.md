@@ -97,6 +97,7 @@ For this PoC, use seeded products. Product creation is deferred.
 - [x] Mock provider acknowledgement with a claim number and claims handler.
 - [x] Track assessment, repair, car hire, collection, and claim closure.
 - [x] Let Clients review and close claims that are ready for collection.
+- [x] Let Clients rate the product provider when closing a claim.
 - [ ] Replace the mock acknowledgement with real provider APIs.
 
 ## Automated reminders

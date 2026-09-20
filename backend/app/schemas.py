@@ -278,6 +278,7 @@ class InsuranceRequestClose(BaseModel):
     """The short review a Client leaves when closing a completed claim."""
 
     review: str = Field(min_length=2, max_length=500)
+    provider_rating: int = Field(ge=1, le=5)
 
     @field_validator("review", mode="before")
     @classmethod
@@ -303,5 +304,6 @@ class InsuranceRequest(BaseModel):
     progress_stage: InsuranceRequestProgressStage
     progress_updated_at: datetime
     client_review: str | None
+    provider_rating: int | None
     closed_at: datetime | None
     created_at: datetime
