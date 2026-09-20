@@ -52,7 +52,7 @@
 
 - [x] Show the signed-in user's name with their role underneath and a red icon Log out action.
 - [x] Add a small ClientConnect wordmark to the navigation bar.
-- [x] Keep navigation sticky and place the animated financial-advice shortcut beside Log out.
+- [x] Keep navigation sticky and place the animated financial-advice shortcut directly below Log out.
 - [x] Use canonical Client-by-ID and Product-by-ID routes.
 - [x] Present the financial position as one compact label-and-value card.
 - [x] Keep the Client page focused on financial position, products, and chat.

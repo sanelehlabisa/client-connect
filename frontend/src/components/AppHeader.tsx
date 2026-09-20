@@ -54,7 +54,7 @@ export function AppHeader({ backLabel, backTo }: AppHeaderProps) {
 
   return (
     <AppBar color="inherit" elevation={1} position="sticky" sx={{ top: 0 }}>
-      <Toolbar sx={{ flexWrap: "wrap", gap: 2, py: 1 }}>
+      <Toolbar sx={{ flexWrap: "wrap", gap: 1.5, py: 1 }}>
         {backLabel && backTo && (
           <Button component={Link} to={backTo}>
             {backLabel}
@@ -102,47 +102,49 @@ export function AppHeader({ backLabel, backTo }: AppHeaderProps) {
             {roleLabel}
           </Typography>
         </Stack>
-        {auth.roles.includes("client") && (
+        <Stack alignItems="stretch" spacing={0.5}>
           <Button
-            color="primary"
-            component="a"
-            href="#client-chat"
-            onClick={scrollToChat}
-            size="small"
-            startIcon={
-              <Box
-                component="span"
-                sx={{
-                  alignItems: "center",
-                  animation: `${questionPulse} 1.6s ease-in-out infinite`,
-                  bgcolor: "primary.main",
-                  borderRadius: "50%",
-                  color: "primary.contrastText",
-                  display: "inline-flex",
-                  fontSize: 13,
-                  fontWeight: 900,
-                  height: 22,
-                  justifyContent: "center",
-                  width: 22,
-                }}
-              >
-                ?
-              </Box>
-            }
-            sx={{ fontWeight: 800, textTransform: "none" }}
-            variant="outlined"
+            color="error"
+            onClick={() => void auth.logout()}
+            startIcon={<LogoutIcon />}
+            variant="contained"
           >
-            Need Financial Advice?
+            Log out
           </Button>
-        )}
-        <Button
-          color="error"
-          onClick={() => void auth.logout()}
-          startIcon={<LogoutIcon />}
-          variant="contained"
-        >
-          Log out
-        </Button>
+          {auth.roles.includes("client") && (
+            <Button
+              color="primary"
+              component="a"
+              href="#client-chat"
+              onClick={scrollToChat}
+              size="small"
+              startIcon={
+                <Box
+                  component="span"
+                  sx={{
+                    alignItems: "center",
+                    animation: `${questionPulse} 1.6s ease-in-out infinite`,
+                    bgcolor: "primary.main",
+                    borderRadius: "50%",
+                    color: "primary.contrastText",
+                    display: "inline-flex",
+                    fontSize: 13,
+                    fontWeight: 900,
+                    height: 22,
+                    justifyContent: "center",
+                    width: 22,
+                  }}
+                >
+                  ?
+                </Box>
+              }
+              sx={{ fontWeight: 800, textTransform: "none" }}
+              variant="outlined"
+            >
+              Need Financial Advice?
+            </Button>
+          )}
+        </Stack>
       </Toolbar>
     </AppBar>
   );

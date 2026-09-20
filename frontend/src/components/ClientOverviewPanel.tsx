@@ -186,7 +186,7 @@ export function ClientOverviewPanel({
   }
 
   return (
-    <Stack spacing={2.5}>
+    <Stack spacing={1.5}>
       <Paper
         aria-label="Financial position"
         variant="outlined"
@@ -195,11 +195,19 @@ export function ClientOverviewPanel({
           display: "grid",
           gridTemplateColumns: "1fr auto",
           maxWidth: 440,
-          p: 2.5,
-          rowGap: 1.25,
+          p: 2,
+          rowGap: 1,
           width: "100%",
         }}
       >
+        <Typography
+          component="h2"
+          fontWeight={700}
+          sx={{ gridColumn: "1 / -1", mb: 0.5 }}
+          variant="subtitle1"
+        >
+          Financial position
+        </Typography>
         {financialCards.map(([label, value]) => (
           <Box key={label} sx={{ display: "contents" }}>
             <Typography color="text.secondary" component="span" variant="body2">
