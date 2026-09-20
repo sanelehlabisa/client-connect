@@ -23,13 +23,13 @@
 
 ## 2. P0 - Next work: Adviser claim approval
 
-- [ ] Let only the assigned Adviser approve, request changes to, or reject a
+- [x] Let only the assigned Adviser approve, request changes to, or reject a
   submitted claim from the shared Insurance Product-by-ID view.
-- [ ] Remove the separate dashboard Claim review queue after those shared-view
+- [x] Remove the separate dashboard Claim review queue after those shared-view
   actions work.
-- [ ] Add every decision as a timestamped system activity and notify the Client
+- [x] Add every decision as a timestamped system activity and notify the Client
   in the same shared timeline.
-- [ ] Add focused tests for ownership, Adviser assignment, roles, and allowed
+- [x] Add focused tests for ownership, Adviser assignment, roles, and allowed
   claim-status transitions.
 
 ## 3. P0 - Simplified Adviser inbox and activity
@@ -58,7 +58,7 @@
 ## 4. P0 - Simple end-to-end claim completion
 
 - [x] Verify a Client can create an Investment Goal and open its Product-by-ID view.
-- [ ] Let a Client submit initial claim information only for Insurance they own.
+- [x] Let a Client submit initial claim information only for Insurance they own.
 - [ ] Add explicit workflow state for the selected Assessor, assessment time,
   mock report, selected Repairer and quote, repair time, final amounts, demo
   charge, and PDF.

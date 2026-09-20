@@ -96,6 +96,18 @@ class ClaimNotReadyToCloseError(Exception):
         )
 
 
+def is_status_transition_allowed(
+    current_status: str,
+    requested_status: str,
+) -> bool:
+    """Return whether the requested claim decision follows the demo workflow."""
+
+    return requested_status in ALLOWED_STATUS_TRANSITIONS.get(
+        current_status,
+        set(),
+    )
+
+
 def _insurance_request(row: Any) -> InsuranceRequest:
     """Build an insurance request response from a database row."""
 
@@ -420,8 +432,7 @@ def update_insurance_request_status(
     if current_status is None:
         return None
 
-    allowed_statuses = ALLOWED_STATUS_TRANSITIONS.get(current_status, set())
-    if requested_status not in allowed_statuses:
+    if not is_status_transition_allowed(current_status, requested_status):
         raise InvalidStatusTransitionError(current_status, requested_status)
 
     session.execute(
@@ -440,6 +451,11 @@ def update_insurance_request_status(
     ]
     formatted_message = notification_message.format(
         product_name=request.product_name,
+    )
+    adviser_activity_title = f"Claim status updated: {requested_status}"
+    adviser_activity_message = (
+        f"{request.client_name}'s claim for {request.product_name} is now "
+        f"{requested_status.lower()}."
     )
     session.execute(
         text(
@@ -470,6 +486,37 @@ def update_insurance_request_status(
             "request_id": request_id,
             "title": notification_title,
             "message": formatted_message,
+        },
+    )
+    session.execute(
+        text(
+            """
+            INSERT INTO notifications (
+                id,
+                user_id,
+                title,
+                message,
+                is_read,
+                product_id
+            )
+            SELECT
+                :notification_id,
+                clients.adviser_id,
+                :title,
+                :message,
+                TRUE,
+                products.id
+            FROM insurance_requests
+            JOIN products ON products.id = insurance_requests.product_id
+            JOIN clients ON clients.id = products.client_id
+            WHERE insurance_requests.id = :request_id
+            """
+        ),
+        {
+            "notification_id": str(uuid4()),
+            "request_id": request_id,
+            "title": adviser_activity_title,
+            "message": adviser_activity_message,
         },
     )
     client_email: str | None = None

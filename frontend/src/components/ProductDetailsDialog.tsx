@@ -12,9 +12,12 @@ import {
 } from "@mui/material";
 
 import type { Product } from "../api/clients";
+import { ClaimProgressPanel } from "./ClaimProgressPanel";
 
 type ProductDetailsDialogProps = {
   canReportAccident: boolean;
+  clientId: string;
+  getAccessToken: () => Promise<string | undefined>;
   onArchive: (product: Product) => void;
   onClose: () => void;
   onReportAccident: (product: Product) => void;
@@ -89,6 +92,8 @@ function formatDate(value: string | null): string {
 /** Display type-specific Goal, Investment, or Insurance details. */
 export function ProductDetailsDialog({
   canReportAccident,
+  clientId,
+  getAccessToken,
   onArchive,
   onClose,
   onReportAccident,
@@ -115,7 +120,12 @@ export function ProductDetailsDialog({
       : 0;
 
   return (
-    <Dialog fullWidth maxWidth="sm" onClose={onClose} open>
+    <Dialog
+      fullWidth
+      maxWidth={isInsurance ? "lg" : "sm"}
+      onClose={onClose}
+      open
+    >
       <DialogTitle>
         <Stack alignItems="flex-start" spacing={1}>
           <Chip
@@ -238,6 +248,15 @@ export function ProductDetailsDialog({
             <DetailItem
               label="Cover amount"
               value={formatMoney(readNumber(product, "cover_amount"))}
+            />
+          </Box>
+        )}
+        {isInsurance && (
+          <Box sx={{ mt: 3 }}>
+            <ClaimProgressPanel
+              clientId={clientId}
+              getAccessToken={getAccessToken}
+              productId={product.id}
             />
           </Box>
         )}

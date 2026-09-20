@@ -80,25 +80,6 @@ export async function submitAccidentReport(
   return (await response.json()) as InsuranceRequest;
 }
 
-/** Load active claims assigned to the authenticated Adviser. */
-export async function getAdviserReviewQueue(
-  accessToken: string,
-  signal?: AbortSignal,
-): Promise<InsuranceRequest[]> {
-  const response = await fetch(`${apiUrl}/insurance-requests`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    signal,
-  });
-
-  if (!response.ok) {
-    throw new Error("The claim review queue could not be loaded.");
-  }
-
-  return (await response.json()) as InsuranceRequest[];
-}
-
 /** Load claim history for the owning Client or assigned Adviser. */
 export async function getClientInsuranceRequests(
   accessToken: string,

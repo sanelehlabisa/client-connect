@@ -366,6 +366,8 @@ export function ClientOverviewPanel({
       </Box>
       <ProductDetailsDialog
         canReportAccident={!isAdviser}
+        clientId={overview.id}
+        getAccessToken={getAccessToken}
         onArchive={(product) => {
           closeProductRoute();
           setInsuranceToArchive(product);

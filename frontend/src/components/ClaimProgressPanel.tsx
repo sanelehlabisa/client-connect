@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   Alert,
   Box,
@@ -26,14 +26,18 @@ import {
   closeInsuranceRequest,
   getClientInsuranceRequests,
   updateInsuranceRequestProgress,
+  updateInsuranceRequestStatus,
+  type AccidentReport,
   type InsuranceRequest,
   type InsuranceRequestProgressStage,
+  type InsuranceRequestStatus,
 } from "../api/insuranceRequests";
 import { useAuth } from "../auth/AuthContext";
 
 type ClaimProgressPanelProps = {
   clientId: string;
   getAccessToken: () => Promise<string | undefined>;
+  productId: string;
 };
 
 const nextStage: Partial<
@@ -52,10 +56,66 @@ const dateTime = new Intl.DateTimeFormat("en-ZA", {
   timeStyle: "short",
 });
 
-/** Show shared claim history and Adviser-only progress controls. */
+/** Parse only the structured accident reports created by the Client form. */
+function parseAccidentReport(details: string): AccidentReport | null {
+  try {
+    const report = JSON.parse(details) as Partial<AccidentReport>;
+    return typeof report.description === "string" &&
+      typeof report.location === "string"
+      ? (report as AccidentReport)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Show the claim information an Adviser needs before making a decision. */
+function ClaimDetails({ request }: { request: InsuranceRequest }) {
+  const report = parseAccidentReport(request.details);
+
+  if (!report) {
+    return (
+      <Typography sx={{ overflowWrap: "anywhere", whiteSpace: "pre-wrap" }}>
+        {request.details}
+      </Typography>
+    );
+  }
+
+  return (
+    <Box
+      sx={{
+        display: "grid",
+        gap: 2,
+        gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr 2fr" },
+      }}
+    >
+      <Box>
+        <Typography color="text.secondary" variant="caption">
+          Incident date and time
+        </Typography>
+        <Typography variant="body2">{report.incident_at}</Typography>
+      </Box>
+      <Box>
+        <Typography color="text.secondary" variant="caption">
+          Location
+        </Typography>
+        <Typography variant="body2">{report.location}</Typography>
+      </Box>
+      <Box>
+        <Typography color="text.secondary" variant="caption">
+          Description
+        </Typography>
+        <Typography variant="body2">{report.description}</Typography>
+      </Box>
+    </Box>
+  );
+}
+
+/** Show Product-specific claim history and role-appropriate actions. */
 export function ClaimProgressPanel({
   clientId,
   getAccessToken,
+  productId,
 }: ClaimProgressPanelProps) {
   const auth = useAuth();
   const [requests, setRequests] = useState<InsuranceRequest[]>([]);
@@ -77,12 +137,13 @@ export function ClaimProgressPanel({
         if (!accessToken) {
           throw new Error("A valid access token is required.");
         }
+        const clientRequests = await getClientInsuranceRequests(
+          accessToken,
+          clientId,
+          controller.signal,
+        );
         setRequests(
-          await getClientInsuranceRequests(
-            accessToken,
-            clientId,
-            controller.signal,
-          ),
+          clientRequests.filter((request) => request.product_id === productId),
         );
       } catch (requestError: unknown) {
         if (
@@ -100,7 +161,41 @@ export function ClaimProgressPanel({
 
     void loadRequests();
     return () => controller.abort();
-  }, [clientId, getAccessToken]);
+  }, [clientId, getAccessToken, productId]);
+
+  /** Replace one changed claim without reloading the entire Client view. */
+  function replaceRequest(updated: InsuranceRequest): void {
+    setRequests((current) =>
+      current.map((request) =>
+        request.id === updated.id ? updated : request,
+      ),
+    );
+  }
+
+  async function handleStatusChange(
+    request: InsuranceRequest,
+    status: Exclude<InsuranceRequestStatus, "Submitted">,
+  ): Promise<void> {
+    setUpdatingId(request.id);
+    setErrorMessage(null);
+    try {
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        throw new Error("A valid access token is required.");
+      }
+      replaceRequest(
+        await updateInsuranceRequestStatus(accessToken, request.id, status),
+      );
+    } catch (requestError: unknown) {
+      setErrorMessage(
+        requestError instanceof Error
+          ? requestError.message
+          : "The claim status could not be updated.",
+      );
+    } finally {
+      setUpdatingId(null);
+    }
+  }
 
   async function handleAdvance(request: InsuranceRequest): Promise<void> {
     const stage = nextStage[request.progress_stage];
@@ -120,9 +215,7 @@ export function ClaimProgressPanel({
         request.id,
         stage,
       );
-      setRequests((current) =>
-        current.map((item) => (item.id === updated.id ? updated : item)),
-      );
+      replaceRequest(updated);
     } catch (requestError: unknown) {
       setErrorMessage(
         requestError instanceof Error
@@ -153,9 +246,7 @@ export function ClaimProgressPanel({
         cleanReview,
         providerRating,
       );
-      setRequests((current) =>
-        current.map((item) => (item.id === updated.id ? updated : item)),
-      );
+      replaceRequest(updated);
       setClosingRequest(null);
       setReview("");
       setProviderRating(0);
@@ -227,23 +318,37 @@ export function ClaimProgressPanel({
               !isAdviser &&
               request.status === "Approved" &&
               request.progress_stage === "Ready for Collection";
+            const canStartReview =
+              isAdviser && request.status === "Submitted";
+            const canDecide =
+              isAdviser && request.status === "Under Review";
+            const isUpdating = updatingId === request.id;
 
             return (
-              <TableRow key={request.id}>
-                <TableCell>{request.product_name}</TableCell>
-                <TableCell>
-                  {request.provider_claim_number ?? "Pending"}
-                </TableCell>
-                <TableCell>
-                  <Chip label={request.status} size="small" variant="outlined" />
-                </TableCell>
-                <TableCell>
-                  <Chip color="primary" label={request.progress_stage} size="small" />
-                </TableCell>
-                <TableCell>
-                  {dateTime.format(new Date(request.progress_updated_at))}
-                </TableCell>
-                <TableCell>
+              <Fragment key={request.id}>
+                <TableRow>
+                  <TableCell>{request.product_name}</TableCell>
+                  <TableCell>
+                    {request.provider_claim_number ?? "Pending"}
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={request.status}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      color="primary"
+                      label={request.progress_stage}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {dateTime.format(new Date(request.progress_updated_at))}
+                  </TableCell>
+                  <TableCell>
                   {request.provider_rating !== null || request.client_review ? (
                     <Stack spacing={0.5}>
                       {request.provider_rating !== null ? (
@@ -266,42 +371,115 @@ export function ClaimProgressPanel({
                   ) : (
                     "—"
                   )}
-                </TableCell>
-                <TableCell align="right">
-                  {canAdvance && (
-                    <Button
-                      disabled={updatingId === request.id}
-                      onClick={() => void handleAdvance(request)}
-                      size="small"
-                      variant="outlined"
+                  </TableCell>
+                  <TableCell align="right">
+                  <Stack
+                    direction="row"
+                    flexWrap="wrap"
+                    justifyContent="flex-end"
+                    spacing={0.75}
+                    useFlexGap
+                  >
+                    {canStartReview && (
+                      <Button
+                        disabled={isUpdating}
+                        onClick={() =>
+                          void handleStatusChange(request, "Under Review")
+                        }
+                        size="small"
+                        variant="contained"
+                      >
+                        {isUpdating ? "Updating..." : "Start review"}
+                      </Button>
+                    )}
+                    {canDecide && (
+                      <>
+                        <Button
+                          color="error"
+                          disabled={isUpdating}
+                          onClick={() =>
+                            void handleStatusChange(request, "Rejected")
+                          }
+                          size="small"
+                        >
+                          Reject
+                        </Button>
+                        <Button
+                          disabled={isUpdating}
+                          onClick={() =>
+                            void handleStatusChange(
+                              request,
+                              "Changes Required",
+                            )
+                          }
+                          size="small"
+                          variant="outlined"
+                        >
+                          Request changes
+                        </Button>
+                        <Button
+                          disabled={isUpdating}
+                          onClick={() =>
+                            void handleStatusChange(request, "Approved")
+                          }
+                          size="small"
+                          variant="contained"
+                        >
+                          {isUpdating ? "Updating..." : "Approve"}
+                        </Button>
+                      </>
+                    )}
+                    {canAdvance && (
+                      <Button
+                        disabled={isUpdating}
+                        onClick={() => void handleAdvance(request)}
+                        size="small"
+                        variant="outlined"
+                      >
+                        {isUpdating ? "Updating..." : followingStage}
+                      </Button>
+                    )}
+                    {canClientClose && (
+                      <Button
+                        onClick={() => setClosingRequest(request)}
+                        size="small"
+                        variant="contained"
+                      >
+                        Review and close
+                      </Button>
+                    )}
+                    {!canStartReview &&
+                      !canDecide &&
+                      !canAdvance &&
+                      !canClientClose && (
+                        <Typography color="text.secondary" variant="body2">
+                          {request.progress_stage === "Closed"
+                            ? "Complete"
+                            : request.progress_stage ===
+                                "Ready for Collection"
+                              ? "Awaiting Client"
+                              : isAdviser
+                                ? "Decision recorded"
+                                : "Adviser updating"}
+                        </Typography>
+                      )}
+                  </Stack>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell colSpan={7} sx={{ bgcolor: "action.hover" }}>
+                    <Typography
+                      color="text.secondary"
+                      display="block"
+                      sx={{ mb: 1 }}
+                      variant="caption"
                     >
-                      {updatingId === request.id
-                        ? "Updating..."
-                        : followingStage}
-                    </Button>
-                  )}
-                  {canClientClose && (
-                    <Button
-                      onClick={() => setClosingRequest(request)}
-                      size="small"
-                      variant="contained"
-                    >
-                      Review and close
-                    </Button>
-                  )}
-                  {!canAdvance && !canClientClose && (
-                    <Typography color="text.secondary" variant="body2">
-                      {request.progress_stage === "Closed"
-                        ? "Complete"
-                        : request.progress_stage === "Ready for Collection"
-                          ? "Awaiting Client"
-                          : isAdviser
-                            ? "Awaiting approval"
-                            : "Adviser updating"}
+                      Submitted claim information
                     </Typography>
-                  )}
-                </TableCell>
-              </TableRow>
+                    <ClaimDetails request={request} />
+                  </TableCell>
+                </TableRow>
+              </Fragment>
             );
           })}
         </TableBody>
