@@ -6,7 +6,7 @@
 - [x] Make Adviser matching plus chat the primary hackathon demo.
 - [x] Add root `AGENTS.md` so future work follows the new direction.
 - [x] Change user-facing product branding from RSF ClientConnect to ClientConnect.
-- [ ] Rename the GitHub repository from `rsf` to `client-connect` and update `origin`.
+- [x] Rename the GitHub repository from `rsf` to `client-connect` and update `origin`.
 
 ## 1. Existing foundation - keep working
 
@@ -19,10 +19,10 @@
 
 ## 2. P0 - Seeded provider marketplace
 
-- [ ] Add an additive provider schema with type, services, rating, location, and availability.
-- [ ] Seed Financial Advisers, Financial Institutions, Assessors, and Repairers.
-- [ ] Include the Royal Square Adviser in deterministic seed data.
-- [ ] Seed basic Insurance, Investment, and Savings products for Financial Institutions.
+- [x] Add an additive provider schema with type, services, rating, location, and availability.
+- [x] Seed Financial Advisers, Financial Institutions, Assessors, and Repairers.
+- [x] Include the Royal Square Adviser in deterministic seed data.
+- [x] Seed basic Insurance, Investment, and Savings products for Financial Institutions.
 
 ## 3. P0 - Reusable provider matching
 
@@ -41,13 +41,28 @@
 - [ ] Link the selection to the Client and open the existing conversation.
 - [ ] Verify the Client message, Adviser reply, and Client notification demo end to end.
 
-## 5. P1 - Seeded financial-product discovery
+## 5. P1 - Product removal
+
+- [ ] Let a Client or assigned Adviser remove a Goal or Investment after confirmation.
+- [ ] Archive an Insurance policy without deleting its claim and notification history.
+- [ ] Hide archived products from active views and keep them available in history.
+- [ ] Notify the Client and Adviser when a product is removed or archived.
+
+## 6. P1 - Automatic Adviser task recommendations
+
+- [ ] Generate simple, deterministic recommended tasks from Client products and requests.
+- [ ] Deduplicate recommendations so the Adviser is not repeatedly notified.
+- [ ] Store each recommendation as an Adviser notification linked to the Client.
+- [ ] Show a non-blocking popup when a new recommendation arrives in ClientConnect.
+- [ ] Let the Adviser open the Client or create a reminder from the recommendation.
+
+## 7. P1 - Seeded financial-product discovery
 
 - [ ] Show selected seeded Financial Institution products to Clients.
 - [ ] Display provider, product name, product type, and basic information.
 - [ ] Keep product publishing and Financial Institution accounts deferred.
 
-## 6. P2 - Optional claim-provider matching
+## 8. P2 - Optional claim-provider matching
 
 Start only after the Adviser matching demo is complete.
 
@@ -56,7 +71,7 @@ Start only after the Adviser matching demo is complete.
 - [ ] Show two recommendations and store the selected provider on the claim.
 - [ ] Continue the existing claim workflow after selection.
 
-## 7. Demo acceptance
+## 9. Demo acceptance
 
 - [ ] Client logs in and sees their financial dashboard.
 - [ ] Client selects `Get Financial Advice` and receives two recommendations.
