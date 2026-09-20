@@ -9,6 +9,12 @@ Client-Adviser chat, notifications, claims, reminders, and service requests.
 The refocused demo adds a seeded provider marketplace whose first priority is
 matching a Client with a Financial Adviser and continuing in the existing chat.
 
+The priority demo lets a Client create an Investment Goal and submit a claim
+against owned Insurance. The Client and Adviser then complete the claim from a
+shared Product view: chat/activity, Assessor selection, appointment, report,
+mock provider quotes, final balance, PDF summary, and development email all stay
+in one traceable workflow.
+
 See [AGENTS.md](AGENTS.md) for the product and engineering guardrails and
 [TASKS.md](TASKS.md) for the prioritized backlog.
 

@@ -20,20 +20,27 @@ Client experience intentionally small.
 
 ## Hackathon priority
 
-The must-win demo is the Client-by-ID page and Adviser communication:
+The must-win demo is one shared product workflow used by the Client and Adviser:
 
-1. A Client logs in and sees one compact financial-position card.
-2. The Client sees an active-products table and can open a Product-by-ID URL.
-3. The assigned-Adviser chat is visible directly on the Client page.
-4. Automatic reminders and notification activity appear as system items inside
-   that conversation; do not add a separate Notifications page.
-5. The Client sends a message.
-6. The Adviser opens the Client-by-ID page, sees the message, and replies.
-7. The Client receives a notification and sees the reply.
+1. The Client creates an Investment Goal and sees its progress.
+2. The Client opens owned Insurance and submits a claim form.
+3. Every message, status change, appointment, document, provider request, and
+   decision appears in the chat/activity timeline for that Product.
+4. The Adviser reviews the claim and selects one of three seeded Assessors.
+5. The Client chooses an assessment date and time. Do not add real scheduling
+   or artificial waiting; a simple state transition is enough for the demo.
+6. The Adviser uploads the mock Assessor report on the same Product view.
+7. The system emails claim and assessment information to three matched seeded
+   service providers through MailHog, then exposes mock quotes to the Adviser.
+8. The Adviser selects a quote and records the excess, approved amount, and
+   final claim balance.
+9. The Adviser generates one claim-summary PDF and manually emails it to the
+   seeded Financial Institution through MailHog.
 
-The two-result provider-matching API and seed data remain available, but the
-primary Client page does not need an Adviser-selection modal. Finish and polish
-the direct communication flow before optional provider matching in claims.
+`Admin` in demo language means the authenticated `Adviser`; do not add another
+role. Assessors, repairers, and Financial Institutions remain seeded external
+records without logins or dashboards. Reuse one Product-by-ID interface with
+role-specific actions instead of separate Client and Adviser workflow pages.
 
 ## Roles and provider records
 
@@ -94,8 +101,8 @@ recommendation algorithms for this hackathon.
 
 Do not implement provider self-registration, provider dashboards, Financial
 Institution product management, real provider APIs, payments, transaction-fee
-collection, AI matching, advanced recommendation logic, multiple tenancy, or
-production claim integrations during the hackathon.
+collection, AI matching, advanced recommendation logic, multiple tenancy, real
+scheduling, or production claim integrations during the hackathon.
 
 ## Source of truth
 
