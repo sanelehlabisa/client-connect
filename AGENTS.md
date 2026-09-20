@@ -24,7 +24,7 @@ The must-win demo is the Client-by-ID page and Adviser communication:
 
 1. A Client logs in and sees one compact financial-position card.
 2. The Client sees an active-products table and can open a Product-by-ID URL.
-3. **Get Financial Advice** scrolls directly to the assigned-Adviser chat.
+3. The assigned-Adviser chat is visible directly on the Client page.
 4. Automatic reminders and notification activity appear as system items inside
    that conversation; do not add a separate Notifications page.
 5. The Client sends a message.

@@ -96,7 +96,7 @@ export function AddInsuranceDialog({
   return (
     <Dialog fullWidth maxWidth="sm" onClose={handleClose} open={open}>
       <Stack component="form" onSubmit={(event) => void handleSubmit(event)}>
-        <DialogTitle>Add an Insurance policy</DialogTitle>
+        <DialogTitle>Add Insurance</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
             {error && <Alert severity="error">{error}</Alert>}
@@ -171,7 +171,7 @@ export function AddInsuranceDialog({
             Cancel
           </Button>
           <Button disabled={saving} type="submit" variant="contained">
-            {saving ? "Adding..." : "Add policy"}
+            {saving ? "Adding..." : "Add Insurance"}
           </Button>
         </DialogActions>
       </Stack>

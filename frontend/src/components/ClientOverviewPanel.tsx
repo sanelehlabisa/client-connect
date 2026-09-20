@@ -254,7 +254,7 @@ export function ClientOverviewPanel({
               onClick={() => setInsuranceDialogOpen(true)}
               variant="contained"
             >
-              Add policy
+              Add Insurance
             </Button>
           </Stack>
         </Box>

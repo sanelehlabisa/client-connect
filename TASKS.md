@@ -52,11 +52,11 @@
 
 - [x] Show the signed-in user's name with their role underneath and a red icon Log out action.
 - [x] Add a small ClientConnect wordmark to the navigation bar.
-- [x] Keep navigation sticky and place the animated financial-advice shortcut directly below Log out.
+- [x] Keep navigation sticky with a simple Log out action.
 - [x] Use canonical Client-by-ID and Product-by-ID routes.
 - [x] Present the financial position as one compact label-and-value card.
 - [x] Keep the Client page focused on financial position, products, and chat.
-- [x] Send `Get Financial Advice` directly to the Adviser conversation.
+- [ ] Consider restoring a compact `Get Financial Advice` shortcut after the core Client page is stable.
 - [x] Present Investment Goal and Insurance as the two new-product actions.
 - [x] Show active automatic reminders inside the conversation instead of a separate table.
 - [x] Show notification activity inside chat and remove the separate Notifications page.
