@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Box,
@@ -24,6 +24,7 @@ import {
 } from "../api/clients";
 import { useAuth } from "../auth/AuthContext";
 import { AccidentReportDialog } from "./AccidentReportDialog";
+import { AdviserMatchDialog } from "./AdviserMatchDialog";
 import { AddGoalDialog } from "./AddGoalDialog";
 import { AddInsuranceDialog } from "./AddInsuranceDialog";
 import { AddInvestmentDialog } from "./AddInvestmentDialog";
@@ -95,6 +96,9 @@ export function ClientOverviewPanel({
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
   const [insuranceDialogOpen, setInsuranceDialogOpen] = useState(false);
   const [investmentDialogOpen, setInvestmentDialogOpen] = useState(false);
+  const [adviserDialogOpen, setAdviserDialogOpen] = useState(false);
+  const chatSection = useRef<HTMLDivElement | null>(null);
+  const isAdviser = auth.roles.includes("adviser");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -165,6 +169,36 @@ export function ClientOverviewPanel({
         </Typography>
         <Typography color="text.secondary">Financial position</Typography>
       </Box>
+
+      {!isAdviser && (
+        <Paper
+          sx={{
+            alignItems: { xs: "flex-start", sm: "center" },
+            bgcolor: "#eef6ff",
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 2,
+            justifyContent: "space-between",
+            p: 3,
+          }}
+          variant="outlined"
+        >
+          <Box>
+            <Typography fontWeight={700} variant="h6">
+              Need help with your financial plan?
+            </Typography>
+            <Typography color="text.secondary">
+              Compare two matched Advisers and start a private conversation.
+            </Typography>
+          </Box>
+          <Button
+            onClick={() => setAdviserDialogOpen(true)}
+            variant="contained"
+          >
+            Get Financial Advice
+          </Button>
+        </Paper>
+      )}
 
       <Box
         sx={{
@@ -286,12 +320,27 @@ export function ClientOverviewPanel({
         clientId={overview.id}
         getAccessToken={getAccessToken}
       />
-      <ChatPanel
+      <Box ref={chatSection}>
+        <ChatPanel
+          clientId={overview.id}
+          getAccessToken={getAccessToken}
+        />
+      </Box>
+      <AdviserMatchDialog
         clientId={overview.id}
         getAccessToken={getAccessToken}
+        onClose={() => setAdviserDialogOpen(false)}
+        onSelected={() => {
+          setAdviserDialogOpen(false);
+          window.setTimeout(
+            () => chatSection.current?.scrollIntoView({ behavior: "smooth" }),
+            100,
+          );
+        }}
+        open={adviserDialogOpen}
       />
       <ProductDetailsDialog
-        canReportAccident={!auth.roles.includes("adviser")}
+        canReportAccident={!isAdviser}
         onClose={() => setSelectedProduct(null)}
         onReportAccident={(product) => {
           setSelectedProduct(null);

@@ -88,6 +88,20 @@ class ProviderRecommendation(BaseModel):
     distance_km: float | None
 
 
+class ProviderSelectionRequest(BaseModel):
+    """The Client profile that is selecting a matched provider."""
+
+    client_id: str = Field(min_length=1, max_length=40)
+
+
+class ProviderSelectionResult(BaseModel):
+    """Confirmation that an Adviser is linked to the Client conversation."""
+
+    client_id: str
+    provider_id: str
+    provider_name: str
+
+
 class FinancialPosition(BaseModel):
     """A client's current high-level financial position."""
 

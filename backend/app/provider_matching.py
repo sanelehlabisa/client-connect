@@ -4,11 +4,16 @@ from dataclasses import dataclass
 from decimal import Decimal
 from math import asin, cos, inf, radians, sin, sqrt
 from typing import cast
+from uuid import uuid4
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.schemas import ProviderRecommendation, ProviderType
+from app.schemas import (
+    ProviderRecommendation,
+    ProviderSelectionResult,
+    ProviderType,
+)
 
 
 @dataclass(frozen=True)
@@ -171,4 +176,98 @@ def match_providers(
         latitude=latitude,
         longitude=longitude,
         limit=2,
+    )
+
+
+def select_chat_adviser(
+    session: Session,
+    client_id: str,
+    client_email: str,
+    provider_id: str,
+) -> ProviderSelectionResult | None:
+    """Select a matched Adviser already linked to the Client's safe chat."""
+
+    row = session.execute(
+        text(
+            """
+            SELECT
+                marketplace_providers.id AS provider_id,
+                marketplace_providers.name AS provider_name,
+                marketplace_providers.adviser_user_id,
+                client_user.name AS client_name
+            FROM marketplace_providers
+            JOIN clients
+              ON clients.adviser_id = marketplace_providers.adviser_user_id
+            JOIN users AS client_user ON client_user.id = clients.user_id
+            WHERE marketplace_providers.id = :provider_id
+              AND marketplace_providers.provider_type = 'Financial Adviser'
+              AND marketplace_providers.is_available
+              AND marketplace_providers.adviser_user_id IS NOT NULL
+              AND clients.id = :client_id
+              AND client_user.email = :client_email
+            FOR UPDATE OF clients
+            """
+        ),
+        {
+            "provider_id": provider_id,
+            "client_id": client_id,
+            "client_email": client_email,
+        },
+    ).one_or_none()
+    if row is None:
+        return None
+
+    session.execute(
+        text(
+            """
+            UPDATE clients
+            SET adviser_id = :adviser_user_id
+            WHERE id = :client_id
+            """
+        ),
+        {
+            "adviser_user_id": row.adviser_user_id,
+            "client_id": client_id,
+        },
+    )
+    message = (
+        f"{row.client_name} selected you for financial advice and can now "
+        "start a conversation."
+    )
+    session.execute(
+        text(
+            """
+            INSERT INTO notifications (
+                id,
+                user_id,
+                title,
+                message,
+                is_read
+            )
+            SELECT
+                :notification_id,
+                :adviser_user_id,
+                'New financial advice request',
+                :message,
+                FALSE
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM notifications
+                WHERE user_id = :adviser_user_id
+                  AND title = 'New financial advice request'
+                  AND message = :message
+            )
+            """
+        ),
+        {
+            "notification_id": str(uuid4()),
+            "adviser_user_id": row.adviser_user_id,
+            "message": message,
+        },
+    )
+    session.commit()
+    return ProviderSelectionResult(
+        client_id=client_id,
+        provider_id=row.provider_id,
+        provider_name=row.provider_name,
     )

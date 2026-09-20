@@ -34,11 +34,11 @@
 
 ## 4. P0 - Adviser matching demo
 
-- [ ] Add a prominent `Get Financial Advice` action to the Client dashboard.
-- [ ] Request and display two recommended Financial Advisers.
-- [ ] Show name, services, rating, location, and availability for each recommendation.
-- [ ] Let the Client select the seeded Royal Square Adviser.
-- [ ] Link the selection to the Client and open the existing conversation.
+- [x] Add a prominent `Get Financial Advice` action to the Client dashboard.
+- [x] Request and display two recommended Financial Advisers.
+- [x] Show name, services, rating, location, and availability for each recommendation.
+- [x] Let the Client select the seeded Royal Square Adviser.
+- [x] Link the selection to the Client and open the existing conversation.
 - [ ] Verify the Client message, Adviser reply, and Client notification demo end to end.
 
 ## 5. P1 - Product removal
