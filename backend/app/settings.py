@@ -10,16 +10,17 @@ class Settings(BaseSettings):
 
     app_name: str = "ClientConnect API"
     database_url: str = (
-        "postgresql+psycopg://rsf:rsf_dev_password@database:5432/rsf"
+        "postgresql+psycopg://client_connect:client_connect_dev_password"
+        "@database:5432/client_connect"
     )
     frontend_url: str
     keycloak_url: str
     keycloak_internal_url: str = "http://keycloak:8080"
-    keycloak_realm: str = "rsf-clientconnect"
-    keycloak_audience: str = "rsf-api"
+    keycloak_realm: str = "client-connect"
+    keycloak_audience: str = "client-connect-api"
     smtp_host: str = "mailhog"
     smtp_port: int = 1025
-    mail_from: str = "notifications@rsf.local"
+    mail_from: str = "notifications@client-connect.local"
     reminder_check_interval_seconds: int = 60
 
     @property

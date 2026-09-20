@@ -14,4 +14,4 @@ WHERE id = 'client-1';
 
 UPDATE marketplace_providers
 SET name = 'Royal Square Financial - Wilson Masuku'
-WHERE id = 'provider-adviser-rsf';
+WHERE id = 'provider-adviser-royal-square';

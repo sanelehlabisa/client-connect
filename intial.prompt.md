@@ -1,4 +1,4 @@
-Create/update TASKS.md for the RSF ClientConnect hackathon.
+Create/update TASKS.md for the ClientConnect hackathon.
 
 This is a 1-day hackathon. Keep the implementation extremely small.
 Do not add features outside this scope.
@@ -71,7 +71,7 @@ For the hackathon only support:
 
 Example:
 
-Emergency Fund | Goal | RSF | R15,000 / R30,000 | Active
+Emergency Fund | Goal | Royal Square Financial | R15,000 / R30,000 | Active
 Car Insurance | Insurance | Santam | R1,200/month | Active
 
 Clicking a product opens its details.

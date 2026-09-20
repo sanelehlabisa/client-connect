@@ -5,8 +5,8 @@
 - [x] Define ClientConnect as a broader provider marketplace.
 - [x] Make Adviser matching plus chat the primary hackathon demo.
 - [x] Add root `AGENTS.md` so future work follows the new direction.
-- [x] Change user-facing product branding from RSF ClientConnect to ClientConnect.
-- [x] Rename the GitHub repository from `rsf` to `client-connect` and update `origin`.
+- [x] Standardize user-facing product branding as ClientConnect.
+- [x] Rename the GitHub repository to `client-connect` and update `origin`.
 
 ## 1. Existing foundation - keep working
 

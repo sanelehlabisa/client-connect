@@ -22,7 +22,7 @@ def submit_claim(provider: str, request_id: str) -> ClaimAcknowledgement:
     """Return a deterministic acknowledgement from the mock provider API."""
 
     provider_code = "".join(character for character in provider if character.isalnum())
-    provider_code = (provider_code[:4] or "RSF").upper()
+    provider_code = (provider_code[:4] or "CC").upper()
     handler_index = sum(ord(character) for character in provider) % len(
         CLAIMS_HANDLERS
     )

@@ -1,12 +1,12 @@
-name: rsf-clientconnect
+name: client-connect
 
 services:
   database:
     image: postgres:17-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-rsf}
-      POSTGRES_USER: ${POSTGRES_USER:-rsf}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rsf_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-client_connect}
+      POSTGRES_USER: ${POSTGRES_USER:-client_connect}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-client_connect_dev_password}
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
@@ -22,16 +22,16 @@ services:
     build:
       context: ./backend
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://rsf:rsf_dev_password@database:5432/rsf}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://client_connect:client_connect_dev_password@database:5432/client_connect}
       FRONTEND_URL: http://${APP_HOST:?Set APP_HOST in .env}:5173
       SMTP_HOST: ${SMTP_HOST:-mailhog}
       SMTP_PORT: ${SMTP_PORT:-1025}
-      MAIL_FROM: ${MAIL_FROM:-notifications@rsf.local}
+      MAIL_FROM: ${MAIL_FROM:-notifications@client-connect.local}
       REMINDER_CHECK_INTERVAL_SECONDS: ${REMINDER_CHECK_INTERVAL_SECONDS:-60}
       KEYCLOAK_URL: http://${APP_HOST:?Set APP_HOST in .env}:8080
       KEYCLOAK_INTERNAL_URL: ${KEYCLOAK_INTERNAL_URL:-http://keycloak:8080}
-      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-rsf-clientconnect}
-      KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE:-rsf-api}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-client-connect}
+      KEYCLOAK_AUDIENCE: ${KEYCLOAK_AUDIENCE:-client-connect-api}
     ports:
       - "8000:8000"
     volumes:
@@ -51,8 +51,8 @@ services:
     environment:
       VITE_API_URL: http://${APP_HOST:?Set APP_HOST in .env}:8000
       VITE_KEYCLOAK_URL: http://${APP_HOST:?Set APP_HOST in .env}:8080
-      VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-rsf-clientconnect}
-      VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID:-rsf-frontend}
+      VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-client-connect}
+      VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID:-client-connect-frontend}
       CHOKIDAR_USEPOLLING: "true"
     ports:
       - "5173:5173"

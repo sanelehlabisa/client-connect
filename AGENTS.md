@@ -87,9 +87,8 @@ recommendation algorithms for this hackathon.
 - Add type hints, concise docstrings, explicit names, and junior-friendly code.
 - Run the frontend build, backend checks, and focused role-boundary tests before
   completing a ticket.
-- Internal `rsf-*` database and Keycloak identifiers may remain temporarily to
-  avoid breaking the working development environment. User-facing branding is
-  `ClientConnect`.
+- Use `client-connect` naming for Docker, Keycloak, database, and application
+  identifiers as well as user-facing branding.
 
 ## Deferred work
 

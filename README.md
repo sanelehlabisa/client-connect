@@ -86,12 +86,10 @@ The application database matches these accounts by email. If the development
 volumes were created before these users changed, recreate the PostgreSQL and
 Keycloak volumes so the updated seed and realm import are applied together.
 
-## Compatibility note
+## Naming
 
-Some internal database, Keycloak, and Docker identifiers still use `rsf-*` so
-the existing development environment and tokens continue to work. The product
-and repository name is ClientConnect; those internal identifiers can be
-migrated after the hackathon demo.
+Docker, PostgreSQL, Keycloak, and application identifiers use the
+`client-connect` name consistently.
 
 ## Common commands
 

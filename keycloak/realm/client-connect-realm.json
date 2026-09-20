@@ -1,5 +1,5 @@
 {
-  "realm": "rsf-clientconnect",
+  "realm": "client-connect",
   "displayName": "ClientConnect",
   "enabled": true,
   "registrationAllowed": true,
@@ -25,7 +25,7 @@
         "clientRole": false
       },
       {
-        "name": "default-roles-rsf-clientconnect",
+        "name": "default-roles-client-connect",
         "description": "Default role granted to every ClientConnect user",
         "composite": true,
         "composites": {
@@ -38,7 +38,7 @@
     ]
   },
   "defaultRole": {
-    "name": "default-roles-rsf-clientconnect",
+    "name": "default-roles-client-connect",
     "description": "Default role granted to every ClientConnect user",
     "composite": true,
     "clientRole": false
@@ -55,7 +55,7 @@
   ],
   "clients": [
     {
-      "clientId": "rsf-frontend",
+      "clientId": "client-connect-frontend",
       "name": "ClientConnect Frontend",
       "description": "Public React browser client",
       "enabled": true,
@@ -77,12 +77,12 @@
       },
       "protocolMappers": [
         {
-          "name": "rsf-api-audience",
+          "name": "client-connect-api-audience",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
           "consentRequired": false,
           "config": {
-            "included.client.audience": "rsf-api",
+            "included.client.audience": "client-connect-api",
             "id.token.claim": "false",
             "access.token.claim": "true"
           }
@@ -98,7 +98,7 @@
       ]
     },
     {
-      "clientId": "rsf-api",
+      "clientId": "client-connect-api",
       "name": "ClientConnect API",
       "description": "Audience used by FastAPI access tokens",
       "enabled": true,
@@ -106,7 +106,7 @@
       "bearerOnly": true
     },
     {
-      "clientId": "rsf-test-cli",
+      "clientId": "client-connect-test-cli",
       "name": "ClientConnect Development Test CLI",
       "description": "Development-only client used to verify seeded accounts",
       "enabled": true,
@@ -116,12 +116,12 @@
       "directAccessGrantsEnabled": true,
       "protocolMappers": [
         {
-          "name": "rsf-api-audience",
+          "name": "client-connect-api-audience",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
           "consentRequired": false,
           "config": {
-            "included.client.audience": "rsf-api",
+            "included.client.audience": "client-connect-api",
             "id.token.claim": "false",
             "access.token.claim": "true"
           }
