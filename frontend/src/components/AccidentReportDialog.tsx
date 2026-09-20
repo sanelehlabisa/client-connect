@@ -41,6 +41,8 @@ type FormValues = {
   witnessDetails: string;
   otherVehicleOrProperty: string;
   thirdPartyDetails: string;
+  preferredAssessmentAt: string;
+  preferredRepairAt: string;
 };
 
 const initialValues: FormValues = {
@@ -54,6 +56,8 @@ const initialValues: FormValues = {
   witnessDetails: "",
   otherVehicleOrProperty: "",
   thirdPartyDetails: "",
+  preferredAssessmentAt: "",
+  preferredRepairAt: "",
 };
 
 const sceneChecklist = [
@@ -75,7 +79,7 @@ export function AccidentReportDialog({
   const [values, setValues] = useState<FormValues>(initialValues);
   const [fileNames, setFileNames] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [submittedRequest, setSubmittedRequest] =
     useState<InsuranceRequest | null>(null);
 
@@ -95,9 +99,20 @@ export function AccidentReportDialog({
     if (!product || !values.vehicleUse || !values.policeNotified) {
       return;
     }
+    if (
+      !values.preferredAssessmentAt ||
+      !values.preferredRepairAt ||
+      new Date(values.preferredRepairAt) <=
+        new Date(values.preferredAssessmentAt)
+    ) {
+      setErrorMessage(
+        "Preferred repair time must be after the assessment time.",
+      );
+      return;
+    }
 
     setSubmitting(true);
-    setError(false);
+    setErrorMessage(null);
     try {
       const accessToken = await getAccessToken();
       if (!accessToken) {
@@ -116,6 +131,10 @@ export function AccidentReportDialog({
         other_vehicle_or_property: values.otherVehicleOrProperty.trim(),
         third_party_details: values.thirdPartyDetails.trim(),
         file_names: fileNames,
+        preferred_assessment_at: new Date(
+          values.preferredAssessmentAt,
+        ).toISOString(),
+        preferred_repair_at: new Date(values.preferredRepairAt).toISOString(),
       };
       const request = await submitAccidentReport(
         accessToken,
@@ -124,8 +143,12 @@ export function AccidentReportDialog({
         report,
       );
       setSubmittedRequest(request);
-    } catch {
-      setError(true);
+    } catch (requestError: unknown) {
+      setErrorMessage(
+        requestError instanceof Error
+          ? requestError.message
+          : "The accident report could not be submitted.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -133,7 +156,7 @@ export function AccidentReportDialog({
 
   return (
     <Dialog fullWidth maxWidth="md" onClose={submitting ? undefined : onClose} open>
-      <DialogTitle>Report an Accident — {product.name}</DialogTitle>
+      <DialogTitle>Report an Accident - {product.name}</DialogTitle>
       <DialogContent dividers>
         {submittedRequest ? (
           <Alert severity="success">
@@ -153,16 +176,15 @@ export function AccidentReportDialog({
                 <List dense disablePadding>
                   {sceneChecklist.map((item) => (
                     <ListItem disableGutters key={item} sx={{ py: 0 }}>
-                      <ListItemText primary={`• ${item}`} />
+                      <ListItemText primary={`- ${item}`} />
                     </ListItem>
                   ))}
                 </List>
               </Alert>
 
-              {error && (
+              {errorMessage && (
                 <Alert severity="error">
-                  The report could not be submitted. Check the form and try
-                  again.
+                  {errorMessage}
                 </Alert>
               )}
 
@@ -188,6 +210,28 @@ export function AccidentReportDialog({
                   onChange={(event) => updateValue("location", event.target.value)}
                   required
                   value={values.location}
+                />
+                <TextField
+                  disabled={submitting}
+                  InputLabelProps={{ shrink: true }}
+                  label="Preferred assessment date and time"
+                  onChange={(event) =>
+                    updateValue("preferredAssessmentAt", event.target.value)
+                  }
+                  required
+                  type="datetime-local"
+                  value={values.preferredAssessmentAt}
+                />
+                <TextField
+                  disabled={submitting}
+                  InputLabelProps={{ shrink: true }}
+                  label="Preferred repair date and time"
+                  onChange={(event) =>
+                    updateValue("preferredRepairAt", event.target.value)
+                  }
+                  required
+                  type="datetime-local"
+                  value={values.preferredRepairAt}
                 />
                 <TextField
                   disabled={submitting}

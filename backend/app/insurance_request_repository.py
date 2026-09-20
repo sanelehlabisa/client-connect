@@ -1,6 +1,7 @@
 """Database queries for the insurance review workflow."""
 
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 from uuid import uuid4
 
@@ -10,7 +11,10 @@ from sqlalchemy.orm import Session
 from app.activity_repository import ActivityRecipient, create_activity
 from app.email_service import send_email
 from app.provider_gateway import submit_claim
+from app.provider_matching import match_claim_providers
 from app.schemas import (
+    ClaimProviderShortlist,
+    ClaimProviderType,
     InsuranceRequest,
     InsuranceRequestProgressStage,
     InsuranceRequestStatus,
@@ -108,6 +112,10 @@ class ClaimNotReadyToCloseError(Exception):
         )
 
 
+class InvalidClaimProviderSelectionError(Exception):
+    """Raised when the mock claim-provider sequence cannot continue."""
+
+
 def is_status_transition_allowed(
     current_status: str,
     requested_status: str,
@@ -134,6 +142,14 @@ def _insurance_request(row: Any) -> InsuranceRequest:
         status=row.status,
         provider_claim_number=row.provider_claim_number,
         claims_handler=row.claims_handler,
+        preferred_assessment_at=row.preferred_assessment_at,
+        preferred_repair_at=row.preferred_repair_at,
+        selected_assessor_id=row.selected_assessor_id,
+        selected_assessor_name=row.selected_assessor_name,
+        assessor_selected_at=row.assessor_selected_at,
+        selected_repairer_id=row.selected_repairer_id,
+        selected_repairer_name=row.selected_repairer_name,
+        repairer_selected_at=row.repairer_selected_at,
         progress_stage=row.progress_stage,
         progress_updated_at=row.progress_updated_at,
         client_review=row.client_review,
@@ -160,6 +176,14 @@ def _find_request(session: Session, request_id: str) -> InsuranceRequest:
                 insurance_requests.status,
                 insurance_requests.provider_claim_number,
                 insurance_requests.claims_handler,
+                insurance_requests.preferred_assessment_at,
+                insurance_requests.preferred_repair_at,
+                insurance_requests.selected_assessor_id,
+                assessor.name AS selected_assessor_name,
+                insurance_requests.assessor_selected_at,
+                insurance_requests.selected_repairer_id,
+                repairer.name AS selected_repairer_name,
+                insurance_requests.repairer_selected_at,
                 insurance_requests.progress_stage,
                 insurance_requests.progress_updated_at,
                 insurance_requests.client_review,
@@ -170,6 +194,10 @@ def _find_request(session: Session, request_id: str) -> InsuranceRequest:
             JOIN products ON products.id = insurance_requests.product_id
             JOIN clients ON clients.id = products.client_id
             JOIN users AS client_user ON client_user.id = clients.user_id
+            LEFT JOIN marketplace_providers AS assessor
+                ON assessor.id = insurance_requests.selected_assessor_id
+            LEFT JOIN marketplace_providers AS repairer
+                ON repairer.id = insurance_requests.selected_repairer_id
             WHERE insurance_requests.id = :request_id
             """
         ),
@@ -217,6 +245,8 @@ def create_insurance_request(
     product_id: str,
     request_type: str,
     details: str,
+    preferred_assessment_at: datetime,
+    preferred_repair_at: datetime,
 ) -> InsuranceRequest | None:
     """Create a request only for an Insurance product owned by the Client."""
 
@@ -229,6 +259,8 @@ def create_insurance_request(
                 product_id,
                 request_type,
                 details,
+                preferred_assessment_at,
+                preferred_repair_at,
                 status
             )
             SELECT
@@ -236,6 +268,8 @@ def create_insurance_request(
                 products.id,
                 :request_type,
                 :details,
+                :preferred_assessment_at,
+                :preferred_repair_at,
                 'Submitted'
             FROM products
             JOIN clients ON clients.id = products.client_id
@@ -255,6 +289,8 @@ def create_insurance_request(
             "client_email": client_email,
             "request_type": request_type,
             "details": details,
+            "preferred_assessment_at": preferred_assessment_at,
+            "preferred_repair_at": preferred_repair_at,
         },
     ).scalar_one_or_none()
 
@@ -398,6 +434,14 @@ def list_client_insurance_requests(
                 insurance_requests.status,
                 insurance_requests.provider_claim_number,
                 insurance_requests.claims_handler,
+                insurance_requests.preferred_assessment_at,
+                insurance_requests.preferred_repair_at,
+                insurance_requests.selected_assessor_id,
+                assessor.name AS selected_assessor_name,
+                insurance_requests.assessor_selected_at,
+                insurance_requests.selected_repairer_id,
+                repairer.name AS selected_repairer_name,
+                insurance_requests.repairer_selected_at,
                 insurance_requests.progress_stage,
                 insurance_requests.progress_updated_at,
                 insurance_requests.client_review,
@@ -408,6 +452,10 @@ def list_client_insurance_requests(
             JOIN products ON products.id = insurance_requests.product_id
             JOIN clients ON clients.id = products.client_id
             JOIN users AS client_user ON client_user.id = clients.user_id
+            LEFT JOIN marketplace_providers AS assessor
+                ON assessor.id = insurance_requests.selected_assessor_id
+            LEFT JOIN marketplace_providers AS repairer
+                ON repairer.id = insurance_requests.selected_repairer_id
             WHERE clients.id = :client_id
             ORDER BY insurance_requests.created_at DESC
             """
@@ -437,6 +485,14 @@ def list_adviser_review_queue(
                 insurance_requests.status,
                 insurance_requests.provider_claim_number,
                 insurance_requests.claims_handler,
+                insurance_requests.preferred_assessment_at,
+                insurance_requests.preferred_repair_at,
+                insurance_requests.selected_assessor_id,
+                assessor.name AS selected_assessor_name,
+                insurance_requests.assessor_selected_at,
+                insurance_requests.selected_repairer_id,
+                repairer.name AS selected_repairer_name,
+                insurance_requests.repairer_selected_at,
                 insurance_requests.progress_stage,
                 insurance_requests.progress_updated_at,
                 insurance_requests.client_review,
@@ -448,6 +504,10 @@ def list_adviser_review_queue(
             JOIN clients ON clients.id = products.client_id
             JOIN users AS client_user ON client_user.id = clients.user_id
             JOIN users AS adviser_user ON adviser_user.id = clients.adviser_id
+            LEFT JOIN marketplace_providers AS assessor
+                ON assessor.id = insurance_requests.selected_assessor_id
+            LEFT JOIN marketplace_providers AS repairer
+                ON repairer.id = insurance_requests.selected_repairer_id
             WHERE adviser_user.email = :adviser_email
               AND insurance_requests.status IN ('Submitted', 'Under Review')
             ORDER BY insurance_requests.created_at
@@ -456,6 +516,204 @@ def list_adviser_review_queue(
         {"adviser_email": adviser_email},
     ).all()
     return [_insurance_request(row) for row in rows]
+
+
+def get_next_claim_provider_shortlist(
+    session: Session,
+    request_id: str,
+    adviser_email: str,
+) -> ClaimProviderShortlist | None:
+    """Return the next three mock providers for an assigned approved claim."""
+
+    row = session.execute(
+        text(
+            """
+            SELECT
+                insurance_requests.status,
+                insurance_requests.selected_assessor_id,
+                insurance_requests.selected_repairer_id
+            FROM insurance_requests
+            JOIN products ON products.id = insurance_requests.product_id
+            JOIN clients ON clients.id = products.client_id
+            JOIN users AS adviser_user ON adviser_user.id = clients.adviser_id
+            WHERE insurance_requests.id = :request_id
+              AND adviser_user.email = :adviser_email
+            """
+        ),
+        {"request_id": request_id, "adviser_email": adviser_email},
+    ).one_or_none()
+    if row is None:
+        return None
+    if row.status != "Approved":
+        raise InvalidClaimProviderSelectionError(
+            "Approve the claim before selecting service providers."
+        )
+
+    provider_type: ClaimProviderType | None
+    if row.selected_assessor_id is None:
+        provider_type = "Assessor"
+    elif row.selected_repairer_id is None:
+        provider_type = "Repairer"
+    else:
+        provider_type = None
+
+    if provider_type is None:
+        return ClaimProviderShortlist(
+            provider_type=None,
+            providers=[],
+            complete=True,
+        )
+
+    return ClaimProviderShortlist(
+        provider_type=provider_type,
+        providers=match_claim_providers(session, provider_type),
+        complete=False,
+    )
+
+
+def select_next_claim_provider(
+    session: Session,
+    request_id: str,
+    adviser_email: str,
+    provider_id: str,
+) -> InsuranceRequest | None:
+    """Select and immediately accept the next mock claim provider."""
+
+    row = session.execute(
+        text(
+            """
+            SELECT
+                insurance_requests.status,
+                insurance_requests.selected_assessor_id,
+                insurance_requests.selected_repairer_id
+            FROM insurance_requests
+            JOIN products ON products.id = insurance_requests.product_id
+            JOIN clients ON clients.id = products.client_id
+            JOIN users AS adviser_user ON adviser_user.id = clients.adviser_id
+            WHERE insurance_requests.id = :request_id
+              AND adviser_user.email = :adviser_email
+            FOR UPDATE OF insurance_requests
+            """
+        ),
+        {"request_id": request_id, "adviser_email": adviser_email},
+    ).one_or_none()
+    if row is None:
+        return None
+    if row.status != "Approved":
+        raise InvalidClaimProviderSelectionError(
+            "Approve the claim before selecting service providers."
+        )
+
+    if provider_id in {
+        row.selected_assessor_id,
+        row.selected_repairer_id,
+    }:
+        return _find_request(session, request_id)
+
+    provider_type: ClaimProviderType
+    if row.selected_assessor_id is None:
+        provider_type = "Assessor"
+    elif row.selected_repairer_id is None:
+        provider_type = "Repairer"
+    else:
+        raise InvalidClaimProviderSelectionError(
+            "The Assessor and Repairer are already selected."
+        )
+
+    matches = match_claim_providers(session, provider_type)
+    selected_provider = next(
+        (provider for provider in matches if provider.id == provider_id),
+        None,
+    )
+    if selected_provider is None:
+        raise InvalidClaimProviderSelectionError(
+            f"Select one of the recommended {provider_type}s."
+        )
+
+    if provider_type == "Assessor":
+        session.execute(
+            text(
+                """
+                UPDATE insurance_requests
+                SET
+                    selected_assessor_id = :provider_id,
+                    assessor_selected_at = CURRENT_TIMESTAMP,
+                    progress_stage = 'Assessment Scheduled',
+                    progress_updated_at = CURRENT_TIMESTAMP
+                WHERE id = :request_id
+                """
+            ),
+            {"provider_id": provider_id, "request_id": request_id},
+        )
+    else:
+        session.execute(
+            text(
+                """
+                UPDATE insurance_requests
+                SET
+                    selected_repairer_id = :provider_id,
+                    repairer_selected_at = CURRENT_TIMESTAMP,
+                    progress_stage = 'Repair In Progress',
+                    progress_updated_at = CURRENT_TIMESTAMP
+                WHERE id = :request_id
+                """
+            ),
+            {"provider_id": provider_id, "request_id": request_id},
+        )
+
+    request = _find_request(session, request_id)
+    participants = _find_claim_participants(session, request_id)
+    title = f"{provider_type} selected"
+    message = (
+        f"{selected_provider.name} was selected and accepted immediately for "
+        "the demo. The preferred appointment is recorded on the claim."
+    )
+    session.execute(
+        text(
+            """
+            INSERT INTO notifications (
+                id,
+                user_id,
+                title,
+                message,
+                is_read,
+                product_id
+            )
+            VALUES (
+                :notification_id,
+                :user_id,
+                :title,
+                :message,
+                FALSE,
+                :product_id
+            )
+            """
+        ),
+        {
+            "notification_id": str(uuid4()),
+            "user_id": participants.client_user_id,
+            "title": title,
+            "message": message,
+            "product_id": request.product_id,
+        },
+    )
+    create_activity(
+        session,
+        client_id=request.client_id,
+        product_id=request.product_id,
+        actor_user_id=participants.adviser_user_id,
+        activity_type="Service",
+        source_type="claim-provider-selection",
+        source_id=f"{request_id}:{provider_type}",
+        title=title,
+        body=message,
+        recipients=[
+            ActivityRecipient(participants.adviser_user_id, is_read=True),
+            ActivityRecipient(participants.client_user_id),
+        ],
+    )
+    session.commit()
+    return request
 
 
 def update_insurance_request_status(

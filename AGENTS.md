@@ -23,26 +23,18 @@ Client experience intentionally small.
 The must-win demo is one shared product workflow used by the Client and Adviser:
 
 1. The Client creates an Investment Goal and sees its progress.
-2. The Client opens owned Insurance and submits the initial claim information.
+2. The Client opens owned Insurance, submits the initial claim information,
+   and enters preferred assessment and repair date-times in the same form.
 3. The assigned Adviser opens the same Product view and approves, requests
    changes to, or rejects the claim. Do not keep a separate Claim review page.
-4. After approval, the system recommends three seeded Assessors and the Adviser
-   selects one.
-5. The Client enters an assessment date and time only when that step becomes
-   active. Assume the seeded provider accepts it; do not build real scheduling.
-6. The system generates a mock assessment report and logs it without an
-   Assessor login, integration, or artificial wait.
-7. The system recommends three seeded Repairers and the Adviser selects one.
-8. The Client enters a repair date and time only after Repairer selection.
-9. The Adviser records the excess, approved amount, selected quote, and final
-   claim balance.
-10. Immediately before PDF generation, the system records one demo transaction
-    charge against the brokerage/Adviser and adds an Adviser-only activity with
-    its amount, reference, and time. This is not a real payment.
-11. The Adviser generates one claim-summary PDF and manually emails it to the
-    seeded Financial Institution through MailHog.
-12. Every user message, system event, selected date, provider choice, report,
-    email, decision, and charge is timestamped in one Product activity timeline.
+4. After approval, the system automatically shows three seeded Assessors. The
+   Adviser selects one and the demo treats it as accepted immediately.
+5. The system then automatically shows three seeded Repairers. The Adviser
+   selects one and the demo treats it as accepted immediately.
+6. The Client and Adviser see the same preferred times and selected providers
+   in the shared Product view.
+7. Every user message, system event, decision, and provider selection is
+   timestamped in one Product activity timeline.
 
 `Admin` in demo language means the authenticated `Adviser`; do not add another
 role. Assessors, repairers, and Financial Institutions remain seeded external
@@ -122,8 +114,6 @@ complex recommendation algorithms for this hackathon.
   choices. Keep current database identifiers stable until the JSON-driven
   product-model migration ticket is implemented.
 - Use additive SQL migrations and deterministic seed data.
-- Keep the transaction charge as one idempotent demo record and Adviser-only
-  system activity. Do not add a payment provider or charge the Client.
 - Keep the seeded demo-user JSON as the PoC source of truth for `client` and
   `adviser` roles, and validate backend-signed tokens on every protected route.
 - Enforce Client ownership and Adviser assignment in backend queries.
@@ -136,7 +126,8 @@ complex recommendation algorithms for this hackathon.
 ## Deferred work
 
 Do not implement provider self-registration, provider dashboards, Financial
-Institution product management, real provider APIs, real payments or fee
+Institution product management, Assessor reports, Repairer quotes, claim PDFs,
+final claim accounting, provider emails, real provider APIs, payments or fee
 collection, AI matching, advanced recommendation logic, multiple tenancy, real
 scheduling, production identity management, or production claim integrations
 during the hackathon.

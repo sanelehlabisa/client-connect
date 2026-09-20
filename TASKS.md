@@ -59,29 +59,18 @@
 
 - [x] Verify a Client can create an Investment Goal and open its Product-by-ID view.
 - [x] Let a Client submit initial claim information only for Insurance they own.
-- [ ] Add explicit workflow state for the selected Assessor, assessment time,
-  mock report, selected Repairer and quote, repair time, final amounts, demo
-  charge, and PDF.
-- [ ] Seed a third available Assessor and Repairer and add a claim-only
-  three-result shortlist without changing the two-result Adviser matching API.
-- [ ] After approval, recommend three seeded Assessors and let the Adviser pick
-  one without adding an Assessor login.
-- [ ] Let the Client enter the assessment date and time only when that step is
-  active, then log the selection in the timeline.
-- [ ] Generate a mock assessment report and log it without real waiting or an
-  external Assessor integration.
-- [ ] Recommend three seeded Repairers with mock quotes and let the Adviser
-  select one.
-- [ ] Let the Client enter the repair date and time only after Repairer selection;
-  assume the demo providers accept the chosen time.
-- [ ] Let the Adviser record the excess, approved amount, selected quote, and
-  final claim balance.
-- [ ] Immediately before PDF generation, record one Adviser-only system activity
-  showing the brokerage's demo transaction charge, amount, reference, and time.
-- [ ] Generate the claim-summary PDF only after the charge is recorded, then let
-  the Adviser email it manually to the seeded Financial Institution via MailHog.
-- [ ] Add focused tests for step order, one-at-a-time dates, provider selection,
-  duplicate-charge prevention, and the charge-before-PDF rule.
+- [x] Reduce the PoC to Client-entered preferred assessment and repair times,
+  followed by assigned-Adviser provider selection; defer the rest.
+- [x] Store and show both preferred date-times from the initial Client claim form.
+- [x] Seed three available Assessors and Repairers without changing the existing
+  two-result Adviser-matching API.
+- [x] After approval, automatically show the assigned Adviser the top three
+  mock Assessors, then the top three mock Repairers.
+- [x] Let the Adviser select each provider once and treat the mock provider as
+  accepted immediately; show the same selection to the Client.
+- [x] Record provider selections in the shared activity timeline.
+- [x] Add focused tests for date order, assignment, role, shortlist membership,
+  selection order, and duplicate-selection prevention.
 - [ ] Verify the complete Client-to-Adviser demo from a second device on the same network.
 
 ## 5. P0 - Same-network demo access
@@ -174,6 +163,8 @@
 - [ ] Provider registration and provider dashboards.
 - [ ] Financial Institution product-management UI.
 - [ ] Real financial-provider and production claim integrations.
-- [ ] Real payments and transaction-fee collection; keep only the demo charge record.
+- [ ] Real payments, transaction fees, and the earlier demo-charge idea.
 - [ ] AI matching, RAG, and advanced recommendation algorithms.
 - [ ] Multiple brokerage tenancy and production infrastructure.
+- [ ] Assessor/Repairer accounts, external scheduling, reports, quotes, final
+  amounts, PDFs, and provider emails beyond the simple mock selection demo.

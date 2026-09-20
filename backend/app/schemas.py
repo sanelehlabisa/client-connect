@@ -48,6 +48,7 @@ ProviderType = Literal[
     "Assessor",
     "Repairer",
 ]
+ClaimProviderType = Literal["Assessor", "Repairer"]
 
 
 class ProviderMatchRequest(BaseModel):
@@ -110,6 +111,20 @@ class ProviderSelectionResult(BaseModel):
     client_id: str
     provider_id: str
     provider_name: str
+
+
+class ClaimProviderShortlist(BaseModel):
+    """The next three mock providers available for an approved claim."""
+
+    provider_type: ClaimProviderType | None
+    providers: list[ProviderRecommendation]
+    complete: bool
+
+
+class ClaimProviderSelection(BaseModel):
+    """One mock provider selected by the assigned Adviser."""
+
+    provider_id: str = Field(min_length=1, max_length=40)
 
 
 class FinancialPosition(BaseModel):
@@ -393,6 +408,18 @@ class InsuranceRequestCreate(BaseModel):
     product_id: str = Field(min_length=1, max_length=40)
     request_type: str = Field(min_length=2, max_length=80)
     details: str = Field(min_length=2, max_length=10000)
+    preferred_assessment_at: datetime
+    preferred_repair_at: datetime
+
+    @model_validator(mode="after")
+    def validate_preferred_times(self) -> "InsuranceRequestCreate":
+        """Require the preferred repair time to follow the assessment."""
+
+        if self.preferred_repair_at <= self.preferred_assessment_at:
+            raise ValueError(
+                "Preferred repair time must be after the assessment time."
+            )
+        return self
 
 
 class InsuranceRequestStatusUpdate(BaseModel):
@@ -439,6 +466,14 @@ class InsuranceRequest(BaseModel):
     status: InsuranceRequestStatus
     provider_claim_number: str | None
     claims_handler: str | None
+    preferred_assessment_at: datetime | None
+    preferred_repair_at: datetime | None
+    selected_assessor_id: str | None
+    selected_assessor_name: str | None
+    assessor_selected_at: datetime | None
+    selected_repairer_id: str | None
+    selected_repairer_name: str | None
+    repairer_selected_at: datetime | None
     progress_stage: InsuranceRequestProgressStage
     progress_updated_at: datetime
     client_review: str | None

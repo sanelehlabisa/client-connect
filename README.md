@@ -5,10 +5,10 @@ with financial-service providers and keeps the resulting work in one shared
 workflow.
 
 The priority demo lets a Client create an Investment Goal and submit a claim
-against owned Insurance. The Client and Adviser then complete the claim from a
-shared Product view: chat/activity, Assessor selection, appointment, report,
-mock provider quotes, final balance, PDF summary, and development email all stay
-in one traceable workflow.
+against owned Insurance with preferred assessment and repair times. From the
+same Product view, the Adviser reviews the claim and selects from three mock
+Assessors followed by three mock Repairers. Each selection is accepted
+immediately and is visible to both roles in one traceable workflow.
 
 See [AGENTS.md](AGENTS.md) for the product and engineering guardrails and
 [TASKS.md](TASKS.md) for the prioritized backlog.

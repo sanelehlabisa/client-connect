@@ -10,10 +10,16 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.schemas import (
+    ClaimProviderType,
     ProviderRecommendation,
     ProviderSelectionResult,
     ProviderType,
 )
+
+CLAIM_PROVIDER_SERVICES: dict[ClaimProviderType, str] = {
+    "Assessor": "Motor Assessment",
+    "Repairer": "Motor Repair",
+}
 
 
 @dataclass(frozen=True)
@@ -176,6 +182,20 @@ def match_providers(
         latitude=latitude,
         longitude=longitude,
         limit=2,
+    )
+
+
+def match_claim_providers(
+    session: Session,
+    provider_type: ClaimProviderType,
+) -> list[ProviderRecommendation]:
+    """Return the three deterministic mock providers for a claim step."""
+
+    return match_provider_candidates(
+        candidates=load_provider_candidates(session),
+        provider_type=provider_type,
+        required_service=CLAIM_PROVIDER_SERVICES[provider_type],
+        limit=3,
     )
 
 

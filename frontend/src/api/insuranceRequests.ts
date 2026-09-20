@@ -1,4 +1,5 @@
 import { apiUrl } from "../config";
+import type { ProviderRecommendation } from "./providers";
 
 export type AccidentReport = {
   incident_at: string;
@@ -12,6 +13,8 @@ export type AccidentReport = {
   other_vehicle_or_property: string;
   third_party_details: string;
   file_names: string[];
+  preferred_assessment_at: string;
+  preferred_repair_at: string;
 };
 
 export type InsuranceRequest = {
@@ -25,6 +28,14 @@ export type InsuranceRequest = {
   status: InsuranceRequestStatus;
   provider_claim_number: string | null;
   claims_handler: string | null;
+  preferred_assessment_at: string | null;
+  preferred_repair_at: string | null;
+  selected_assessor_id: string | null;
+  selected_assessor_name: string | null;
+  assessor_selected_at: string | null;
+  selected_repairer_id: string | null;
+  selected_repairer_name: string | null;
+  repairer_selected_at: string | null;
   progress_stage: InsuranceRequestProgressStage;
   progress_updated_at: string;
   client_review: string | null;
@@ -50,6 +61,12 @@ export type InsuranceRequestProgressStage =
   | "Ready for Collection"
   | "Closed";
 
+export type ClaimProviderShortlist = {
+  provider_type: "Assessor" | "Repairer" | null;
+  providers: ProviderRecommendation[];
+  complete: boolean;
+};
+
 /** Submit a structured motor-accident report through the protected API. */
 export async function submitAccidentReport(
   accessToken: string,
@@ -69,6 +86,8 @@ export async function submitAccidentReport(
         product_id: productId,
         request_type: "Motor accident claim",
         details: JSON.stringify(report),
+        preferred_assessment_at: report.preferred_assessment_at,
+        preferred_repair_at: report.preferred_repair_at,
       }),
     },
   );
@@ -77,6 +96,52 @@ export async function submitAccidentReport(
     throw new Error("The accident report could not be submitted.");
   }
 
+  return (await response.json()) as InsuranceRequest;
+}
+
+/** Load the next three mock providers for an assigned approved claim. */
+export async function getNextClaimProviders(
+  accessToken: string,
+  requestId: string,
+): Promise<ClaimProviderShortlist> {
+  const response = await fetch(
+    `${apiUrl}/insurance-requests/${requestId}/next-providers`,
+    { headers: { Authorization: `Bearer ${accessToken}` } },
+  );
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as {
+      detail?: string;
+    } | null;
+    throw new Error(body?.detail ?? "Provider recommendations could not load.");
+  }
+  return (await response.json()) as ClaimProviderShortlist;
+}
+
+/** Select the next recommended provider and accept it immediately for the demo. */
+export async function selectNextClaimProvider(
+  accessToken: string,
+  requestId: string,
+  providerId: string,
+): Promise<InsuranceRequest> {
+  const response = await fetch(
+    `${apiUrl}/insurance-requests/${requestId}/provider`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ provider_id: providerId }),
+    },
+  );
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as {
+      detail?: string;
+    } | null;
+    throw new Error(body?.detail ?? "The provider could not be selected.");
+  }
   return (await response.json()) as InsuranceRequest;
 }
 

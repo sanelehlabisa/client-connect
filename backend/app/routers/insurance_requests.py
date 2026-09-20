@@ -14,16 +14,21 @@ from app.auth import (
 from app.database import get_database_session
 from app.insurance_request_repository import (
     ClaimNotReadyToCloseError,
+    InvalidClaimProviderSelectionError,
     InvalidProgressTransitionError,
     InvalidStatusTransitionError,
     close_insurance_request,
     create_insurance_request,
+    get_next_claim_provider_shortlist,
     list_adviser_review_queue,
     list_client_insurance_requests,
-    update_insurance_request_status,
+    select_next_claim_provider,
     update_insurance_request_progress,
+    update_insurance_request_status,
 )
 from app.schemas import (
+    ClaimProviderSelection,
+    ClaimProviderShortlist,
     InsuranceRequest,
     InsuranceRequestClose,
     InsuranceRequestCreate,
@@ -61,6 +66,8 @@ def submit_insurance_request(
         product_id=request_data.product_id,
         request_type=request_data.request_type,
         details=request_data.details,
+        preferred_assessment_at=request_data.preferred_assessment_at,
+        preferred_repair_at=request_data.preferred_repair_at,
     )
     if request is None:
         raise HTTPException(
@@ -103,6 +110,68 @@ def get_adviser_review_queue(
     """List active requests for Clients assigned to the Adviser."""
 
     return list_adviser_review_queue(session, require_email(adviser))
+
+
+@review_router.get(
+    "/{request_id}/next-providers",
+    response_model=ClaimProviderShortlist,
+)
+def get_next_claim_providers(
+    request_id: str,
+    adviser: Annotated[AuthenticatedUser, Depends(require_role("adviser"))],
+    session: Annotated[Session, Depends(get_database_session)],
+) -> ClaimProviderShortlist:
+    """Return the next three mock providers for an assigned approved claim."""
+
+    try:
+        shortlist = get_next_claim_provider_shortlist(
+            session=session,
+            request_id=request_id,
+            adviser_email=require_email(adviser),
+        )
+    except InvalidClaimProviderSelectionError as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error),
+        ) from error
+    if shortlist is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Insurance request not found.",
+        )
+    return shortlist
+
+
+@review_router.patch(
+    "/{request_id}/provider",
+    response_model=InsuranceRequest,
+)
+def select_claim_provider(
+    request_id: str,
+    selection: ClaimProviderSelection,
+    adviser: Annotated[AuthenticatedUser, Depends(require_role("adviser"))],
+    session: Annotated[Session, Depends(get_database_session)],
+) -> InsuranceRequest:
+    """Select and immediately accept the next recommended mock provider."""
+
+    try:
+        request = select_next_claim_provider(
+            session=session,
+            request_id=request_id,
+            adviser_email=require_email(adviser),
+            provider_id=selection.provider_id,
+        )
+    except InvalidClaimProviderSelectionError as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error),
+        ) from error
+    if request is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Insurance request not found.",
+        )
+    return request
 
 
 @review_router.patch("/{request_id}", response_model=InsuranceRequest)
