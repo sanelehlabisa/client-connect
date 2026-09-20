@@ -28,6 +28,7 @@ import { AdviserMatchDialog } from "./AdviserMatchDialog";
 import { AddGoalDialog } from "./AddGoalDialog";
 import { AddInsuranceDialog } from "./AddInsuranceDialog";
 import { AddInvestmentDialog } from "./AddInvestmentDialog";
+import { ArchiveInsuranceDialog } from "./ArchiveInsuranceDialog";
 import { ClaimProgressPanel } from "./ClaimProgressPanel";
 import { ProductDetailsDialog } from "./ProductDetailsDialog";
 import { RemoveProductDialog } from "./RemoveProductDialog";
@@ -94,6 +95,8 @@ export function ClientOverviewPanel({
   const [error, setError] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [productToRemove, setProductToRemove] = useState<Product | null>(null);
+  const [insuranceToArchive, setInsuranceToArchive] =
+    useState<Product | null>(null);
   const [accidentProduct, setAccidentProduct] = useState<Product | null>(null);
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
   const [insuranceDialogOpen, setInsuranceDialogOpen] = useState(false);
@@ -343,6 +346,10 @@ export function ClientOverviewPanel({
       />
       <ProductDetailsDialog
         canReportAccident={!isAdviser}
+        onArchive={(product) => {
+          setSelectedProduct(null);
+          setInsuranceToArchive(product);
+        }}
         onClose={() => setSelectedProduct(null)}
         onReportAccident={(product) => {
           setSelectedProduct(null);
@@ -353,6 +360,27 @@ export function ClientOverviewPanel({
           setProductToRemove(product);
         }}
         product={selectedProduct}
+      />
+      <ArchiveInsuranceDialog
+        clientId={overview.id}
+        getAccessToken={getAccessToken}
+        onArchived={(archivedProduct) => {
+          setOverview((current) =>
+            current
+              ? {
+                  ...current,
+                  products: current.products.map((product) =>
+                    product.id === archivedProduct.id
+                      ? archivedProduct
+                      : product,
+                  ),
+                }
+              : current,
+          );
+          setInsuranceToArchive(null);
+        }}
+        onClose={() => setInsuranceToArchive(null)}
+        product={insuranceToArchive}
       />
       <RemoveProductDialog
         clientId={overview.id}

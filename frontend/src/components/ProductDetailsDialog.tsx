@@ -15,6 +15,7 @@ import type { Product } from "../api/clients";
 
 type ProductDetailsDialogProps = {
   canReportAccident: boolean;
+  onArchive: (product: Product) => void;
   onClose: () => void;
   onReportAccident: (product: Product) => void;
   onRemove: (product: Product) => void;
@@ -88,6 +89,7 @@ function formatDate(value: string | null): string {
 /** Display type-specific Goal, Investment, or Insurance details. */
 export function ProductDetailsDialog({
   canReportAccident,
+  onArchive,
   onClose,
   onReportAccident,
   onRemove,
@@ -236,6 +238,11 @@ export function ProductDetailsDialog({
         )}
       </DialogContent>
       <DialogActions>
+        {isInsurance && product.status !== "Archived" && (
+          <Button color="warning" onClick={() => onArchive(product)}>
+            Archive
+          </Button>
+        )}
         {(isGoal || isInvestment) && (
           <Button color="error" onClick={() => onRemove(product)}>
             Remove

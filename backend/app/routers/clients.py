@@ -13,6 +13,7 @@ from app.auth import (
 )
 from app.client_repository import (
     ClientEmailAlreadyExistsError,
+    archive_insurance_product,
     create_client_profile,
     create_client_goal,
     create_insurance_product,
@@ -253,6 +254,40 @@ def delete_client_product(
             detail="Removable product not found.",
         )
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.patch(
+    "/{client_id}/insurance-products/{product_id}/archive",
+    response_model=Product,
+)
+def archive_client_insurance_product(
+    client_id: str,
+    product_id: str,
+    user: Annotated[AuthenticatedUser, Depends(get_current_user)],
+    session: Annotated[Session, Depends(get_database_session)],
+) -> Product:
+    """Let a Client or assigned Adviser archive an Insurance policy."""
+
+    is_adviser = "adviser" in user.roles
+    if not is_adviser and "client" not in user.roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="A ClientConnect role is required.",
+        )
+
+    product = archive_insurance_product(
+        session=session,
+        client_id=client_id,
+        product_id=product_id,
+        user_email=require_email(user),
+        is_adviser=is_adviser,
+    )
+    if product is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Insurance policy not found.",
+        )
+    return product
 
 
 @router.get("/{client_id}", response_model=ClientOverview)

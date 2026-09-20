@@ -254,3 +254,29 @@ export async function removeProduct(
     throw new Error(body?.detail ?? "The product could not be removed.");
   }
 }
+
+/** Archive an Insurance policy while keeping its claims and notifications. */
+export async function archiveInsuranceProduct(
+  accessToken: string,
+  clientId: string,
+  productId: string,
+): Promise<Product> {
+  const response = await fetch(
+    `${apiUrl}/clients/${clientId}/insurance-products/${productId}/archive`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as {
+      detail?: string;
+    } | null;
+    throw new Error(body?.detail ?? "The Insurance policy could not be archived.");
+  }
+
+  return (await response.json()) as Product;
+}

@@ -522,3 +522,53 @@ def remove_client_product(
 
     session.commit()
     return True
+
+
+def archive_insurance_product(
+    session: Session,
+    client_id: str,
+    product_id: str,
+    user_email: str,
+    is_adviser: bool,
+) -> Product | None:
+    """Archive an Insurance policy without deleting its related history."""
+
+    row = session.execute(
+        text(
+            """
+            UPDATE products
+            SET status = 'Archived'
+            FROM clients, users AS client_user, users AS adviser_user
+            WHERE products.id = :product_id
+              AND products.client_id = clients.id
+              AND clients.id = :client_id
+              AND clients.user_id = client_user.id
+              AND clients.adviser_id = adviser_user.id
+              AND products.product_type = 'INSURANCE'
+              AND (
+                    (:is_adviser AND adviser_user.email = :user_email)
+                    OR
+                    (NOT :is_adviser AND client_user.email = :user_email)
+              )
+            RETURNING
+                products.id,
+                products.product_type,
+                products.name,
+                products.provider,
+                products.status,
+                products.details
+            """
+        ),
+        {
+            "product_id": product_id,
+            "client_id": client_id,
+            "user_email": user_email,
+            "is_adviser": is_adviser,
+        },
+    ).one_or_none()
+    if row is None:
+        session.rollback()
+        return None
+
+    session.commit()
+    return _product(row)
