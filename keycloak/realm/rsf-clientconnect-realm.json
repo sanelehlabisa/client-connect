@@ -137,10 +137,10 @@
   ],
   "users": [
     {
-      "username": "thabo.mokoena",
-      "firstName": "Thabo",
-      "lastName": "Mokoena",
-      "email": "thabo.mokoena@example.test",
+      "username": "hlabisasanele730",
+      "firstName": "Sanele",
+      "lastName": "Hlabisa",
+      "email": "hlabisasanele730@gmail.com",
       "enabled": true,
       "emailVerified": true,
       "realmRoles": [
@@ -149,16 +149,16 @@
       "credentials": [
         {
           "type": "password",
-          "value": "Client123!",
+          "value": "Password123!",
           "temporary": false
         }
       ]
     },
     {
-      "username": "amina.daniels",
-      "firstName": "Amina",
-      "lastName": "Daniels",
-      "email": "amina.daniels@example.test",
+      "username": "lozaicmasuku",
+      "firstName": "Wilson",
+      "lastName": "Masuku",
+      "email": "lozaicmasuku@gmail.com",
       "enabled": true,
       "emailVerified": true,
       "realmRoles": [
@@ -170,7 +170,7 @@
       "credentials": [
         {
           "type": "password",
-          "value": "Adviser123!",
+          "value": "Password123!",
           "temporary": false
         }
       ]
