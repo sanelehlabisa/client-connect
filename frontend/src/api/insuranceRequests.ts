@@ -27,6 +27,8 @@ export type InsuranceRequest = {
   claims_handler: string | null;
   progress_stage: InsuranceRequestProgressStage;
   progress_updated_at: string;
+  client_review: string | null;
+  closed_at: string | null;
   created_at: string;
 };
 
@@ -165,6 +167,34 @@ export async function updateInsuranceRequestProgress(
       detail?: string;
     } | null;
     throw new Error(body?.detail ?? "Claim progress could not be updated.");
+  }
+
+  return (await response.json()) as InsuranceRequest;
+}
+
+/** Let the owning Client leave a review and close a ready claim. */
+export async function closeInsuranceRequest(
+  accessToken: string,
+  requestId: string,
+  review: string,
+): Promise<InsuranceRequest> {
+  const response = await fetch(
+    `${apiUrl}/insurance-requests/${requestId}/close`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ review }),
+    },
+  );
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as {
+      detail?: string;
+    } | null;
+    throw new Error(body?.detail ?? "The claim could not be closed.");
   }
 
   return (await response.json()) as InsuranceRequest;

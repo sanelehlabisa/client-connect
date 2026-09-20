@@ -274,6 +274,19 @@ class InsuranceRequestProgressUpdate(BaseModel):
     stage: InsuranceRequestProgressStage
 
 
+class InsuranceRequestClose(BaseModel):
+    """The short review a Client leaves when closing a completed claim."""
+
+    review: str = Field(min_length=2, max_length=500)
+
+    @field_validator("review", mode="before")
+    @classmethod
+    def strip_review(cls, value: object) -> object:
+        """Reject reviews that only contain spaces."""
+
+        return value.strip() if isinstance(value, str) else value
+
+
 class InsuranceRequest(BaseModel):
     """An insurance change request visible to its Client and Adviser."""
 
@@ -289,4 +302,6 @@ class InsuranceRequest(BaseModel):
     claims_handler: str | None
     progress_stage: InsuranceRequestProgressStage
     progress_updated_at: datetime
+    client_review: str | None
+    closed_at: datetime | None
     created_at: datetime

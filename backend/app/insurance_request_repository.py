@@ -45,7 +45,6 @@ PROGRESS_TRANSITIONS: dict[str, str] = {
     "Repairs Authorized": "Repair In Progress",
     "Repair In Progress": "Car Hire Arranged",
     "Car Hire Arranged": "Ready for Collection",
-    "Ready for Collection": "Closed",
 }
 
 
@@ -86,6 +85,17 @@ class InvalidProgressTransitionError(Exception):
         super().__init__(message)
 
 
+class ClaimNotReadyToCloseError(Exception):
+    """Raised when a Client tries to close an unfinished claim."""
+
+    def __init__(self) -> None:
+        """Return one clear rule for the Client-facing API."""
+
+        super().__init__(
+            "The claim must be approved and ready for collection before closing."
+        )
+
+
 def _insurance_request(row: Any) -> InsuranceRequest:
     """Build an insurance request response from a database row."""
 
@@ -102,6 +112,8 @@ def _insurance_request(row: Any) -> InsuranceRequest:
         claims_handler=row.claims_handler,
         progress_stage=row.progress_stage,
         progress_updated_at=row.progress_updated_at,
+        client_review=row.client_review,
+        closed_at=row.closed_at,
         created_at=row.created_at,
     )
 
@@ -125,6 +137,8 @@ def _find_request(session: Session, request_id: str) -> InsuranceRequest:
                 insurance_requests.claims_handler,
                 insurance_requests.progress_stage,
                 insurance_requests.progress_updated_at,
+                insurance_requests.client_review,
+                insurance_requests.closed_at,
                 insurance_requests.created_at
             FROM insurance_requests
             JOIN products ON products.id = insurance_requests.product_id
@@ -319,6 +333,8 @@ def list_client_insurance_requests(
                 insurance_requests.claims_handler,
                 insurance_requests.progress_stage,
                 insurance_requests.progress_updated_at,
+                insurance_requests.client_review,
+                insurance_requests.closed_at,
                 insurance_requests.created_at
             FROM insurance_requests
             JOIN products ON products.id = insurance_requests.product_id
@@ -355,6 +371,8 @@ def list_adviser_review_queue(
                 insurance_requests.claims_handler,
                 insurance_requests.progress_stage,
                 insurance_requests.progress_updated_at,
+                insurance_requests.client_review,
+                insurance_requests.closed_at,
                 insurance_requests.created_at
             FROM insurance_requests
             JOIN products ON products.id = insurance_requests.product_id
@@ -557,6 +575,89 @@ def update_insurance_request_progress(
             "message": (
                 f"Your {request.product_name} claim is now: "
                 f"{requested_stage}."
+            ),
+        },
+    )
+    session.commit()
+    return request
+
+
+def close_insurance_request(
+    session: Session,
+    request_id: str,
+    client_email: str,
+    review: str,
+) -> InsuranceRequest | None:
+    """Close a ready claim only when it belongs to the authenticated Client."""
+
+    row = session.execute(
+        text(
+            """
+            SELECT
+                insurance_requests.status,
+                insurance_requests.progress_stage
+            FROM insurance_requests
+            JOIN products ON products.id = insurance_requests.product_id
+            JOIN clients ON clients.id = products.client_id
+            JOIN users AS client_user ON client_user.id = clients.user_id
+            WHERE insurance_requests.id = :request_id
+              AND client_user.email = :client_email
+            FOR UPDATE OF insurance_requests
+            """
+        ),
+        {"request_id": request_id, "client_email": client_email},
+    ).one_or_none()
+    if row is None:
+        return None
+    if row.status != "Approved" or row.progress_stage != "Ready for Collection":
+        raise ClaimNotReadyToCloseError()
+
+    session.execute(
+        text(
+            """
+            UPDATE insurance_requests
+            SET
+                progress_stage = 'Closed',
+                progress_updated_at = CURRENT_TIMESTAMP,
+                client_review = :review,
+                closed_at = CURRENT_TIMESTAMP
+            WHERE id = :request_id
+            """
+        ),
+        {"request_id": request_id, "review": review},
+    )
+    request = _find_request(session, request_id)
+    session.execute(
+        text(
+            """
+            INSERT INTO notifications (
+                id,
+                user_id,
+                title,
+                message,
+                is_read,
+                product_id
+            )
+            SELECT
+                :notification_id,
+                clients.adviser_id,
+                :title,
+                :message,
+                FALSE,
+                products.id
+            FROM insurance_requests
+            JOIN products ON products.id = insurance_requests.product_id
+            JOIN clients ON clients.id = products.client_id
+            WHERE insurance_requests.id = :request_id
+            """
+        ),
+        {
+            "notification_id": str(uuid4()),
+            "request_id": request_id,
+            "title": f"Claim closed by {request.client_name}",
+            "message": (
+                f"{request.client_name} closed the {request.product_name} claim. "
+                f'Review: "{review}"'
             ),
         },
     )

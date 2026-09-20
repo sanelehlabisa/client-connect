@@ -13,8 +13,10 @@ from app.auth import (
 )
 from app.database import get_database_session
 from app.insurance_request_repository import (
+    ClaimNotReadyToCloseError,
     InvalidProgressTransitionError,
     InvalidStatusTransitionError,
+    close_insurance_request,
     create_insurance_request,
     list_adviser_review_queue,
     list_client_insurance_requests,
@@ -23,6 +25,7 @@ from app.insurance_request_repository import (
 )
 from app.schemas import (
     InsuranceRequest,
+    InsuranceRequestClose,
     InsuranceRequestCreate,
     InsuranceRequestProgressUpdate,
     InsuranceRequestStatusUpdate,
@@ -152,6 +155,45 @@ def advance_insurance_request_progress(
             requested_stage=update.stage,
         )
     except InvalidProgressTransitionError as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error),
+        ) from error
+
+    if request is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Insurance request not found.",
+        )
+    return request
+
+
+@review_router.patch(
+    "/{request_id}/close",
+    response_model=InsuranceRequest,
+)
+def close_client_insurance_request(
+    request_id: str,
+    close_data: InsuranceRequestClose,
+    client: Annotated[AuthenticatedUser, Depends(require_role("client"))],
+    session: Annotated[Session, Depends(get_database_session)],
+) -> InsuranceRequest:
+    """Let the owning Client review and close a ready claim."""
+
+    if "adviser" in client.roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Adviser accounts cannot close Client claims.",
+        )
+
+    try:
+        request = close_insurance_request(
+            session=session,
+            request_id=request_id,
+            client_email=require_email(client),
+            review=close_data.review,
+        )
+    except ClaimNotReadyToCloseError as error:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=str(error),
