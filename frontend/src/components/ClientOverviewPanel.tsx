@@ -84,6 +84,17 @@ function productValue(product: Product): string {
   return premium === null ? "-" : `${formatCurrency(premium)}/month`;
 }
 
+/** Convert an API product type into a user-facing label. */
+function productTypeLabel(product: Product): string {
+  if (product.product_type === "GOAL") {
+    return "Goal";
+  }
+  if (product.product_type === "INVESTMENT") {
+    return "Investment";
+  }
+  return "Insurance";
+}
+
 /** Render the same financial and product view for a Client and Adviser. */
 export function ClientOverviewPanel({
   clientId,
@@ -245,7 +256,7 @@ export function ClientOverviewPanel({
               Products
             </Typography>
             <Typography color="text.secondary" variant="body2">
-              Goals and insurance in one simple view.
+              Goals, insurance, and investments in one simple view.
             </Typography>
           </Box>
           <Stack direction="row" flexWrap="wrap" spacing={1} useFlexGap>
@@ -293,11 +304,7 @@ export function ClientOverviewPanel({
                   <Typography fontWeight={600}>{product.name}</Typography>
                 </TableCell>
                 <TableCell>
-                  {product.product_type === "GOAL"
-                    ? "Goal"
-                    : product.product_type === "INVESTMENT"
-                      ? "Investment"
-                      : "Insurance"}
+                  {productTypeLabel(product)}
                 </TableCell>
                 <TableCell>{product.provider}</TableCell>
                 <TableCell>{productValue(product)}</TableCell>
@@ -317,6 +324,57 @@ export function ClientOverviewPanel({
           </TableBody>
         </Table>
       </TableContainer>
+      {overview.archived_products.length > 0 && (
+        <TableContainer component={Paper} variant="outlined">
+          <Box sx={{ p: 3, pb: 1 }}>
+            <Typography component="h2" fontWeight={700} variant="h6">
+              Product history
+            </Typography>
+            <Typography color="text.secondary" variant="body2">
+              Existing claims and notifications stay available for archived
+              policies.
+            </Typography>
+          </Box>
+          <Table aria-label={`${overview.name} archived products`}>
+            <TableHead>
+              <TableRow>
+                <TableCell>Product</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell>Provider</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell align="right">Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {overview.archived_products.map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell>
+                    <Typography fontWeight={600}>{product.name}</Typography>
+                  </TableCell>
+                  <TableCell>{productTypeLabel(product)}</TableCell>
+                  <TableCell>{product.provider}</TableCell>
+                  <TableCell>
+                    <Chip
+                      color="default"
+                      label={product.status}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    <Button
+                      onClick={() => setSelectedProduct(product)}
+                      size="small"
+                    >
+                      View
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
       <ServiceRequestsPanel
         clientId={overview.id}
         getAccessToken={getAccessToken}
@@ -369,10 +427,16 @@ export function ClientOverviewPanel({
             current
               ? {
                   ...current,
-                  products: current.products.map((product) =>
-                    product.id === archivedProduct.id
-                      ? archivedProduct
-                      : product,
+                  products: current.products.filter(
+                    (product) => product.id !== archivedProduct.id,
+                  ),
+                  archived_products: [
+                    ...current.archived_products.filter(
+                      (product) => product.id !== archivedProduct.id,
+                    ),
+                    archivedProduct,
+                  ].sort((first, second) =>
+                    first.name.localeCompare(second.name),
                   ),
                 }
               : current,

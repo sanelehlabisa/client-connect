@@ -45,7 +45,7 @@
 
 - [x] Let a Client or assigned Adviser remove a Goal or Investment after confirmation.
 - [x] Archive an Insurance policy without deleting its claim and notification history.
-- [ ] Hide archived products from active views and keep them available in history.
+- [x] Hide archived products from active views and keep them available in history.
 - [ ] Notify the Client and Adviser when a product is removed or archived.
 
 ## 6. P1 - Automatic Adviser task recommendations

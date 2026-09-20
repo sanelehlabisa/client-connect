@@ -199,12 +199,13 @@ class InvestmentProductCreate(BaseModel):
 
 
 class ClientOverview(BaseModel):
-    """Financial position and products shared by Client and Adviser views."""
+    """Financial position plus active and archived Client products."""
 
     id: str
     name: str
     financial_position: FinancialPosition
     products: list[Product]
+    archived_products: list[Product]
 
 
 class ClientSummary(BaseModel):

@@ -101,13 +101,20 @@ def find_client_overview(
         {"client_id": client_id},
     ).all()
 
-    products = [_product(row) for row in product_rows]
+    all_products = [_product(row) for row in product_rows]
+    products = [
+        product for product in all_products if product.status != "Archived"
+    ]
+    archived_products = [
+        product for product in all_products if product.status == "Archived"
+    ]
 
     return ClientOverview(
         id=client_row.id,
         name=client_row.name,
         financial_position=_financial_position(client_row),
         products=products,
+        archived_products=archived_products,
     )
 
 
@@ -155,7 +162,9 @@ def list_assigned_clients(
                 financial_positions.liabilities,
                 financial_positions.monthly_income,
                 financial_positions.monthly_expenses,
-                COUNT(DISTINCT products.id) AS product_count,
+                COUNT(DISTINCT products.id) FILTER (
+                    WHERE products.status <> 'Archived'
+                ) AS product_count,
                 COUNT(DISTINCT insurance_requests.id) FILTER (
                     WHERE insurance_requests.status IN ('Submitted', 'Under Review')
                 ) AS pending_actions

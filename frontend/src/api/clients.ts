@@ -43,6 +43,7 @@ export type ClientOverview = {
   name: string;
   financial_position: FinancialPosition;
   products: Product[];
+  archived_products: Product[];
 };
 
 export type GoalCreate = {

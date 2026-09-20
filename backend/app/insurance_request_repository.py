@@ -187,6 +187,7 @@ def create_insurance_request(
             WHERE products.id = :product_id
               AND products.client_id = :client_id
               AND products.product_type = 'INSURANCE'
+              AND products.status <> 'Archived'
               AND client_user.email = :client_email
             RETURNING id
             """

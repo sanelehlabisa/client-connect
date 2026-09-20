@@ -104,6 +104,7 @@ export function ProductDetailsDialog({
   const isInsurance = product.product_type === "INSURANCE";
   const isMotorInsurance =
     isInsurance &&
+    product.status !== "Archived" &&
     readText(product, "insurance_type")?.toLowerCase() === "motor";
   const startingBalance = readNumber(product, "starting_balance");
   const currentValue = readNumber(product, "current_value");
