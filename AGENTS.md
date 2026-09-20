@@ -22,7 +22,7 @@ Client experience intentionally small.
 
 The must-win demo is the Client-by-ID page and Adviser communication:
 
-1. A Client logs in and sees a compact financial-position grid.
+1. A Client logs in and sees one compact financial-position card.
 2. The Client sees an active-products table and can open a Product-by-ID URL.
 3. **Get Financial Advice** scrolls directly to the assigned-Adviser chat.
 4. Automatic reminders appear as system items inside that conversation.

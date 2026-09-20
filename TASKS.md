@@ -52,7 +52,7 @@
 
 - [x] Show the signed-in user's full name and role beside Log out.
 - [x] Use canonical Client-by-ID and Product-by-ID routes.
-- [x] Present the financial position as one compact label-and-value grid.
+- [x] Present the financial position as one compact label-and-value card.
 - [x] Keep the Client page focused on financial position, products, and chat.
 - [x] Send `Get Financial Advice` directly to the Adviser conversation.
 - [x] Show active automatic reminders inside the conversation instead of a separate table.

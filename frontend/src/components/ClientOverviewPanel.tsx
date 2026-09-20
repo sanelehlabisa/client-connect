@@ -190,13 +190,6 @@ export function ClientOverviewPanel({
 
   return (
     <Stack spacing={4}>
-      <Box>
-        <Typography component="h2" fontWeight={700} variant="h4">
-          {overview.name}
-        </Typography>
-        <Typography color="text.secondary">Financial position</Typography>
-      </Box>
-
       {!isAdviser && (
         <Paper
           sx={{
@@ -230,40 +223,23 @@ export function ClientOverviewPanel({
       )}
 
       <Paper
+        aria-label="Financial position"
         variant="outlined"
         sx={{
           display: "grid",
-          gap: 0,
-          gridTemplateColumns: {
-            xs: "1fr",
-            sm: "repeat(2, 1fr)",
-            lg: "repeat(5, 1fr)",
-          },
-          overflow: "hidden",
+          gridTemplateColumns: "1fr auto",
+          maxWidth: 440,
+          p: 2.5,
+          rowGap: 1.25,
+          width: "100%",
         }}
       >
-        {financialCards.map(([label, value], index) => (
-          <Box
-            key={label}
-            sx={{
-              borderLeft: {
-                xs: "none",
-                sm: index % 2 === 0 ? "none" : "1px solid",
-                lg: index === 0 ? "none" : "1px solid",
-              },
-              borderTop: {
-                xs: index === 0 ? "none" : "1px solid",
-                sm: index < 2 ? "none" : "1px solid",
-                lg: "none",
-              },
-              borderColor: "divider",
-              p: 2,
-            }}
-          >
-            <Typography color="text.secondary" variant="body2">
+        {financialCards.map(([label, value]) => (
+          <Box key={label} sx={{ display: "contents" }}>
+            <Typography color="text.secondary" component="span" variant="body2">
               {label}
             </Typography>
-            <Typography fontWeight={700} variant="body1">
+            <Typography component="span" fontWeight={700} textAlign="right">
               {formatCurrency(value)}
             </Typography>
           </Box>
