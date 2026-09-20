@@ -26,11 +26,11 @@
 
 ## 3. P0 - Reusable provider matching
 
-- [ ] Create one typed matching service accepting service, provider type, and optional location.
-- [ ] Filter by provider type, offered service, availability, and relevant location.
-- [ ] Rank deterministically by rating, distance when relevant, then stable name or ID.
-- [ ] Return no more than the best two matches.
-- [ ] Add focused tests for eligibility, ranking, tie-breaking, and the two-result limit.
+- [x] Create one typed matching service accepting service, provider type, and optional location.
+- [x] Filter by provider type, offered service, availability, and relevant location.
+- [x] Rank deterministically by rating, distance when relevant, then stable name or ID.
+- [x] Return no more than the best two matches.
+- [x] Add focused tests for eligibility, ranking, tie-breaking, and the two-result limit.
 
 ## 4. P0 - Adviser matching demo
 

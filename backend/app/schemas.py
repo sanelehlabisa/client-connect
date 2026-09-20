@@ -32,6 +32,60 @@ ServiceRequestType = Literal[
     "Consultation",
 ]
 ServiceRequestStatus = Literal["Submitted", "In Progress", "Completed"]
+ProviderType = Literal[
+    "Financial Adviser",
+    "Financial Institution",
+    "Assessor",
+    "Repairer",
+]
+
+
+class ProviderMatchRequest(BaseModel):
+    """Criteria used by the reusable provider-matching service."""
+
+    provider_type: ProviderType
+    required_service: str = Field(min_length=2, max_length=80)
+    location: str | None = Field(default=None, max_length=120)
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
+
+    @field_validator("required_service", mode="before")
+    @classmethod
+    def strip_required_service(cls, value: object) -> object:
+        """Normalize service text before matching."""
+
+        return value.strip() if isinstance(value, str) else value
+
+    @field_validator("location", mode="before")
+    @classmethod
+    def normalize_location(cls, value: object) -> object:
+        """Treat an empty optional location as no location filter."""
+
+        if isinstance(value, str):
+            return value.strip() or None
+        return value
+
+    @model_validator(mode="after")
+    def validate_coordinates(self) -> "ProviderMatchRequest":
+        """Require latitude and longitude together when distance is relevant."""
+
+        if (self.latitude is None) != (self.longitude is None):
+            raise ValueError("Latitude and longitude must be provided together.")
+        return self
+
+
+class ProviderRecommendation(BaseModel):
+    """One eligible provider returned by deterministic matching."""
+
+    id: str
+    name: str
+    provider_type: ProviderType
+    services: list[str]
+    rating: Decimal
+    location: str
+    is_available: bool
+    adviser_user_id: str | None
+    distance_km: float | None
 
 
 class FinancialPosition(BaseModel):
