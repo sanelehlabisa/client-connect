@@ -34,7 +34,9 @@ export function RemoveProductDialog({
     return null;
   }
 
-  const productLabel = product.product_type === "GOAL" ? "Goal" : "Investment";
+  const removableProduct = product;
+  const productLabel =
+    removableProduct.product_type === "GOAL" ? "Goal" : "Investment";
 
   function closeDialog(): void {
     if (removing) {
@@ -53,8 +55,8 @@ export function RemoveProductDialog({
       if (!accessToken) {
         throw new Error("A valid access token is required.");
       }
-      await removeProduct(accessToken, clientId, product.id);
-      onRemoved(product.id);
+      await removeProduct(accessToken, clientId, removableProduct.id);
+      onRemoved(removableProduct.id);
     } catch (requestError: unknown) {
       setError(
         requestError instanceof Error
@@ -71,7 +73,7 @@ export function RemoveProductDialog({
       <DialogTitle>Remove {productLabel}?</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          {product.name} will be permanently removed from this Client's
+          {removableProduct.name} will be permanently removed from this Client's
           dashboard. This action cannot be undone.
         </DialogContentText>
         {error && (
