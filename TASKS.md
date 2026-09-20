@@ -18,14 +18,23 @@
 - [x] Motor-claim workflow, progress, closure, review, and provider rating.
 - [x] Automated reminders and Client service requests.
 
-## 2. P0 - Seeded provider marketplace
+## 2. P0 - Same-network demo access
+
+- [ ] Create the ignored local `.env` from `.env.example` using the host machine's LAN IP.
+- [ ] Configure the public frontend, backend API, and Keycloak URLs from that LAN IP.
+- [ ] Make Vite, FastAPI, and Keycloak reachable from another device on the same network.
+- [ ] Allow the LAN frontend origin in backend CORS and Keycloak redirect/web origins.
+- [ ] Keep PostgreSQL and container-to-container URLs on the private Docker network.
+- [ ] Document the shareable URL and verify login plus API access from a second device.
+
+## 3. P0 - Seeded provider marketplace
 
 - [x] Add an additive provider schema with type, services, rating, location, and availability.
 - [x] Seed Financial Advisers, Financial Institutions, Assessors, and Repairers.
 - [x] Include the Royal Square Adviser in deterministic seed data.
 - [x] Seed basic Insurance, Investment, and Savings products for Financial Institutions.
 
-## 3. P0 - Reusable provider matching
+## 4. P0 - Reusable provider matching
 
 - [x] Create one typed matching service accepting service, provider type, and optional location.
 - [x] Filter by provider type, offered service, availability, and relevant location.
@@ -33,7 +42,7 @@
 - [x] Return no more than the best two matches.
 - [x] Add focused tests for eligibility, ranking, tie-breaking, and the two-result limit.
 
-## 4. P0 - Adviser connection demo
+## 5. P0 - Adviser connection demo
 
 - [x] Add a prominent `Get Financial Advice` action to the Client dashboard.
 - [x] Keep deterministic two-result Adviser matching available in the API.
@@ -42,14 +51,14 @@
 - [x] Let `Get Financial Advice` open the conversation directly in the simplified UI.
 - [x] Verify the Client message, Adviser reply, and Client notification demo end to end.
 
-## 5. P1 - Product removal
+## 6. P1 - Product removal
 
 - [x] Let a Client or assigned Adviser remove a Goal or Investment after confirmation.
 - [x] Archive an Insurance policy without deleting its claim and notification history.
 - [x] Hide archived products from active views and keep them available in history.
 - [ ] Notify the Client and Adviser when a product is removed or archived.
 
-## 6. P1 - Simplified Client page
+## 7. P1 - Simplified Client page
 
 - [x] Show the signed-in user's name with their role underneath and a red icon Log out action.
 - [x] Add a small ClientConnect wordmark to the navigation bar.
@@ -63,7 +72,7 @@
 - [x] Show notification activity inside chat and remove the separate Notifications page.
 - [ ] Link messages and activity to a Product so Product-by-ID can show a filtered interaction timeline.
 
-## 7. P1 - JSON-driven product model
+## 8. P1 - JSON-driven product model
 
 - [ ] Define `Investment Goal` and `Insurance` as the two canonical product types.
 - [ ] Add one small versioned JSON schema describing each type's labels, questions, and behavior.
@@ -71,7 +80,7 @@
 - [ ] Migrate legacy `GOAL` and `INVESTMENT` records safely into `Investment Goal` without losing data.
 - [ ] Add focused validation tests for both configured product types.
 
-## 8. P1 - Automatic Adviser task recommendations
+## 9. P1 - Automatic Adviser task recommendations
 
 - [ ] Generate simple, deterministic recommended tasks from Client products and requests.
 - [ ] Deduplicate recommendations so the Adviser is not repeatedly notified.
@@ -79,13 +88,13 @@
 - [ ] Show a non-blocking popup when a new recommendation arrives in ClientConnect.
 - [ ] Let the Adviser open the Client or create a reminder from the recommendation.
 
-## 9. P1 - Seeded financial-product discovery
+## 10. P1 - Seeded financial-product discovery
 
 - [ ] Show selected seeded Financial Institution products to Clients.
 - [ ] Display provider, product name, product type, and basic information.
 - [ ] Keep product publishing and Financial Institution accounts deferred.
 
-## 10. P2 - Optional claim-provider matching
+## 11. P2 - Optional claim-provider matching
 
 Start only after the Adviser matching demo is complete.
 
@@ -94,7 +103,7 @@ Start only after the Adviser matching demo is complete.
 - [ ] Show two recommendations and store the selected provider on the claim.
 - [ ] Continue the existing claim workflow after selection.
 
-## 11. Demo acceptance
+## 12. Demo acceptance
 
 - [x] Client logs in and sees their financial dashboard.
 - [x] Client selects `Get Financial Advice` and reaches the Adviser conversation.
